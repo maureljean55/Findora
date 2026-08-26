@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme/colors';
 
 type Props = {
@@ -49,17 +49,22 @@ export default function Button({
 const styles = StyleSheet.create({
   base: {
     width: '100%',
-    height: 48,
-    borderRadius: 8,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   primary: {
     backgroundColor: colors.accent,
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    ...Platform.select({ android: { elevation: 4 } }),
   },
   secondary: {
     backgroundColor: colors.background,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
   },
   disabled: {

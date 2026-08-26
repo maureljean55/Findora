@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import Button from '../components/Button';
@@ -96,110 +97,136 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
+    <LinearGradient
+      colors={[colors.screenGradientTop, colors.screenGradientBottom]}
       style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.card}>
-          <Text style={styles.title}>Connexion</Text>
-          <Text style={styles.subtitle}>Accédez à votre compte Findora</Text>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={styles.tagline}>
+            <Text style={styles.taglineQuestion}>Objet perdu ?{'\n'}</Text>
+            <Text style={styles.taglineAnswer}>Nous le retrouvons.</Text>
+          </Text>
 
-          <View style={styles.form}>
-            <TextField
-              label="Email ou numéro de téléphone"
-              placeholder="vous@exemple.com"
-              value={identifier}
-              onChangeText={setIdentifier}
-              error={errors.identifier}
-              keyboardType="email-address"
-            />
+          <View style={styles.card}>
+            <Text style={styles.title}>Connexion</Text>
+            <Text style={styles.subtitle}>Accédez à votre compte Findora</Text>
 
-            <TextField
-              label="Mot de passe"
-              placeholder="••••••••"
-              value={password}
-              onChangeText={setPassword}
-              error={errors.password}
-              secure
-            />
+            <View style={styles.form}>
+              <TextField
+                label="Email ou numéro de téléphone"
+                placeholder="vous@exemple.com"
+                value={identifier}
+                onChangeText={setIdentifier}
+                error={errors.identifier}
+                keyboardType="email-address"
+                icon="at"
+              />
 
-            <View style={styles.row}>
-              <Pressable
-                style={styles.checkboxRow}
-                onPress={() => setStaySignedIn((value) => !value)}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: staySignedIn }}
-              >
-                <MaterialCommunityIcons
-                  name={staySignedIn ? 'checkbox-marked' : 'checkbox-blank-outline'}
-                  size={20}
-                  color={staySignedIn ? colors.accent : colors.textSecondary}
+              <TextField
+                label="Mot de passe"
+                placeholder="••••••••"
+                value={password}
+                onChangeText={setPassword}
+                error={errors.password}
+                secure
+                icon="lock-outline"
+              />
+
+              <View style={styles.row}>
+                <Pressable
+                  style={styles.checkboxRow}
+                  onPress={() => setStaySignedIn((value) => !value)}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: staySignedIn }}
+                >
+                  <MaterialCommunityIcons
+                    name={staySignedIn ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                    size={20}
+                    color={staySignedIn ? colors.accent : colors.textSecondary}
+                  />
+                  <Text style={styles.checkboxLabel}>Rester connecté</Text>
+                </Pressable>
+
+                <Pressable>
+                  <Text style={styles.link}>Mot de passe oublié ?</Text>
+                </Pressable>
+              </View>
+
+              {formError && <Text style={styles.formError}>{formError}</Text>}
+              {formSuccess && <Text style={styles.formSuccess}>Connexion réussie !</Text>}
+
+              <Button label="Se connecter" onPress={handleLogin} loading={isSubmitting} />
+
+              <View style={styles.separatorRow}>
+                <View style={styles.separatorLine} />
+                <Text style={styles.separatorText}>ou continuer avec</Text>
+                <View style={styles.separatorLine} />
+              </View>
+
+              <View style={styles.socialButtons}>
+                <Button
+                  label="Continuer avec Google"
+                  variant="secondary"
+                  onPress={handleGoogleLogin}
+                  icon={<MaterialCommunityIcons name="google" size={18} color={colors.textPrimary} />}
                 />
-                <Text style={styles.checkboxLabel}>Rester connecté</Text>
+                <Button
+                  label="Continuer avec Apple"
+                  variant="secondary"
+                  onPress={handleAppleLogin}
+                  icon={<MaterialCommunityIcons name="apple" size={18} color={colors.textPrimary} />}
+                />
+              </View>
+            </View>
+
+            <View style={styles.footer}>
+              <Pressable>
+                <Text style={styles.footerLink}>
+                  Pas de compte ? <Text style={styles.footerLinkAccent}>Créer un compte</Text>
+                </Text>
               </Pressable>
 
               <Pressable>
-                <Text style={styles.link}>Mot de passe oublié ?</Text>
+                <Text style={styles.anonymousLink}>Déclarer un objet sans compte</Text>
               </Pressable>
             </View>
-
-            {formError && <Text style={styles.formError}>{formError}</Text>}
-            {formSuccess && <Text style={styles.formSuccess}>Connexion réussie !</Text>}
-
-            <Button label="Se connecter" onPress={handleLogin} loading={isSubmitting} />
-
-            <View style={styles.separatorRow}>
-              <View style={styles.separatorLine} />
-              <Text style={styles.separatorText}>ou continuer avec</Text>
-              <View style={styles.separatorLine} />
-            </View>
-
-            <View style={styles.socialButtons}>
-              <Button
-                label="Continuer avec Google"
-                variant="secondary"
-                onPress={handleGoogleLogin}
-                icon={<MaterialCommunityIcons name="google" size={18} color={colors.textPrimary} />}
-              />
-              <Button
-                label="Continuer avec Apple"
-                variant="secondary"
-                onPress={handleAppleLogin}
-                icon={<MaterialCommunityIcons name="apple" size={18} color={colors.textPrimary} />}
-              />
-            </View>
           </View>
-
-          <View style={styles.footer}>
-            <Pressable>
-              <Text style={styles.footerLink}>
-                Pas de compte ? <Text style={styles.footerLinkAccent}>Créer un compte</Text>
-              </Text>
-            </Pressable>
-
-            <Pressable>
-              <Text style={styles.anonymousLink}>Déclarer un objet sans compte</Text>
-            </Pressable>
-          </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
     padding: 24,
+  },
+  tagline: {
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 30,
+  },
+  taglineQuestion: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  taglineAnswer: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.accent,
   },
   card: {
     width: '100%',

@@ -8,6 +8,9 @@ export const colors = {
   accentText: '#FFFFFF',
   danger: '#D64545',
   placeholder: '#9AA3AF',
+  screenGradientTop: '#EAF2FF',
+  screenGradientBottom: '#D6E7FC',
+  inputFill: '#F2F5F9',
 };
 
 export const splashColors = {

@@ -7,22 +7,39 @@ type Props = TextInputProps & {
   label: string;
   error?: string;
   secure?: boolean;
+  icon?: keyof typeof MaterialCommunityIcons.glyphMap;
 };
 
-export default function TextField({ label, error, secure = false, ...inputProps }: Props) {
+export default function TextField({ label, error, secure = false, icon, ...inputProps }: Props) {
   const [isSecureVisible, setIsSecureVisible] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const hasError = Boolean(error);
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <View style={[styles.inputRow, hasError && styles.inputRowError]}>
+      <View
+        style={[
+          styles.inputRow,
+          isFocused && styles.inputRowFocused,
+          hasError && styles.inputRowError,
+        ]}
+      >
+        {icon && (
+          <MaterialCommunityIcons
+            name={icon}
+            size={20}
+            color={isFocused ? colors.accent : colors.textSecondary}
+          />
+        )}
         <TextInput
           style={styles.input}
           placeholderTextColor={colors.placeholder}
           secureTextEntry={secure && !isSecureVisible}
           autoCapitalize="none"
           autoCorrect={false}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           {...inputProps}
         />
         {secure && (
@@ -57,13 +74,17 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 48,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 14,
+    height: 52,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    backgroundColor: colors.inputFill,
+    gap: 10,
+  },
+  inputRowFocused: {
+    borderColor: colors.accent,
     backgroundColor: colors.background,
-    gap: 8,
   },
   inputRowError: {
     borderColor: colors.danger,
