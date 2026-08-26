@@ -194,8 +194,10 @@ export default function LoginScreen() {
                 </Text>
               </Pressable>
 
-              <Pressable>
-                <Text style={styles.anonymousLink}>Déclarer un objet sans compte</Text>
+              <Pressable style={styles.anonymousLink}>
+                <MaterialCommunityIcons name="flash-outline" size={16} color={colors.accent} />
+                <Text style={styles.anonymousLinkText}>Déclarer un objet sans compte</Text>
+                <MaterialCommunityIcons name="chevron-right" size={16} color={colors.accent} />
               </Pressable>
             </View>
           </View>
@@ -308,8 +310,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   anonymousLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(47, 111, 237, 0.25)',
+  },
+  anonymousLinkText: {
     fontSize: 13,
-    color: colors.textSecondary,
-    textDecorationLine: 'underline',
+    fontWeight: '600',
+    color: colors.accent,
   },
 });
