@@ -12,6 +12,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
+import { supabase } from '../lib/supabase';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^\+?[0-9\s().-]{8,}$/;
@@ -21,11 +22,28 @@ type Errors = {
   password?: string;
 };
 
+function normalizePhone(value: string): string {
+  return value.replace(/[\s().-]/g, '');
+}
+
+function translateAuthError(message: string): string {
+  if (message.includes('Invalid login credentials')) {
+    return 'Email/téléphone ou mot de passe incorrect.';
+  }
+  if (message.toLowerCase().includes('network')) {
+    return 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+  }
+  return 'Une erreur est survenue. Réessayez.';
+}
+
 export default function LoginScreen() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [staySignedIn, setStaySignedIn] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validate = (): boolean => {
     const nextErrors: Errors = {};
@@ -47,9 +65,26 @@ export default function LoginScreen() {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    setFormError(null);
+    setFormSuccess(false);
     if (!validate()) return;
-    // TODO: brancher l'authentification Supabase
+
+    const trimmedIdentifier = identifier.trim();
+    const credentials = EMAIL_REGEX.test(trimmedIdentifier)
+      ? { email: trimmedIdentifier, password }
+      : { phone: normalizePhone(trimmedIdentifier), password };
+
+    setIsSubmitting(true);
+    const { error } = await supabase.auth.signInWithPassword(credentials);
+    setIsSubmitting(false);
+
+    if (error) {
+      setFormError(translateAuthError(error.message));
+      return;
+    }
+
+    setFormSuccess(true);
   };
 
   const handleGoogleLogin = () => {
@@ -112,7 +147,10 @@ export default function LoginScreen() {
               </Pressable>
             </View>
 
-            <Button label="Se connecter" onPress={handleLogin} />
+            {formError && <Text style={styles.formError}>{formError}</Text>}
+            {formSuccess && <Text style={styles.formSuccess}>Connexion réussie !</Text>}
+
+            <Button label="Se connecter" onPress={handleLogin} loading={isSubmitting} />
 
             <View style={styles.separatorRow}>
               <View style={styles.separatorLine} />
@@ -200,6 +238,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.accent,
     fontWeight: '600',
+  },
+  formError: {
+    fontSize: 13,
+    color: colors.danger,
+    textAlign: 'center',
+  },
+  formSuccess: {
+    fontSize: 13,
+    color: '#1B8A5A',
+    textAlign: 'center',
   },
   separatorRow: {
     flexDirection: 'row',
