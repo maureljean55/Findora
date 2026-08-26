@@ -13,6 +13,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
+import GoogleIcon from '../components/icons/GoogleIcon';
 import { supabase } from '../lib/supabase';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -175,7 +176,7 @@ export default function LoginScreen() {
                   label="Continuer avec Google"
                   variant="secondary"
                   onPress={handleGoogleLogin}
-                  icon={<MaterialCommunityIcons name="google" size={18} color={colors.textPrimary} />}
+                  icon={<GoogleIcon size={18} />}
                 />
                 <Button
                   label="Continuer avec Apple"
