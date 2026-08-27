@@ -8,24 +8,35 @@ type Props = TextInputProps & {
   error?: string;
   secure?: boolean;
   icon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  variant?: 'filled' | 'underline';
 };
 
-export default function TextField({ label, error, secure = false, icon, ...inputProps }: Props) {
+export default function TextField({
+  label,
+  error,
+  secure = false,
+  icon,
+  variant = 'filled',
+  ...inputProps
+}: Props) {
   const [isSecureVisible, setIsSecureVisible] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const hasError = Boolean(error);
+  const isUnderline = variant === 'underline';
+  const hasValue = typeof inputProps.value === 'string' && inputProps.value.length > 0;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, isUnderline && styles.labelUnderline]}>{label}</Text>
       <View
         style={[
           styles.inputRow,
-          isFocused && styles.inputRowFocused,
-          hasError && styles.inputRowError,
+          isUnderline && styles.inputRowUnderline,
+          isFocused && (isUnderline ? styles.inputRowUnderlineFocused : styles.inputRowFocused),
+          hasError && (isUnderline ? styles.inputRowUnderlineError : styles.inputRowError),
         ]}
       >
-        {icon && (
+        {icon && !isUnderline && (
           <MaterialCommunityIcons
             name={icon}
             size={20}
@@ -56,6 +67,9 @@ export default function TextField({ label, error, secure = false, icon, ...input
             />
           </Pressable>
         )}
+        {!secure && isUnderline && hasValue && (
+          <MaterialCommunityIcons name="check" size={18} color={colors.textSecondary} />
+        )}
       </View>
       {hasError && <Text style={styles.error}>{error}</Text>}
     </View>
@@ -71,6 +85,11 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginBottom: 6,
   },
+  labelUnderline: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.accent,
+  },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -82,12 +101,27 @@ const styles = StyleSheet.create({
     backgroundColor: colors.inputFill,
     gap: 10,
   },
+  inputRowUnderline: {
+    height: 44,
+    borderWidth: 0,
+    borderBottomWidth: 1.5,
+    borderRadius: 0,
+    borderBottomColor: colors.border,
+    paddingHorizontal: 0,
+    backgroundColor: 'transparent',
+  },
   inputRowFocused: {
     borderColor: colors.accent,
     backgroundColor: colors.background,
   },
+  inputRowUnderlineFocused: {
+    borderBottomColor: colors.accent,
+  },
   inputRowError: {
     borderColor: colors.danger,
+  },
+  inputRowUnderlineError: {
+    borderBottomColor: colors.danger,
   },
   input: {
     flex: 1,
