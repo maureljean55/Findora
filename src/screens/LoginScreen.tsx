@@ -15,30 +15,18 @@ import Button from '../components/Button';
 import TextField from '../components/TextField';
 import GoogleIcon from '../components/icons/GoogleIcon';
 import { supabase } from '../lib/supabase';
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_REGEX = /^\+?[0-9\s().-]{8,}$/;
+import { EMAIL_REGEX, PHONE_REGEX, normalizePhone, translateAuthError } from '../utils/validation';
 
 type Errors = {
   identifier?: string;
   password?: string;
 };
 
-function normalizePhone(value: string): string {
-  return value.replace(/[\s().-]/g, '');
-}
+type Props = {
+  onNavigateToSignup: () => void;
+};
 
-function translateAuthError(message: string): string {
-  if (message.includes('Invalid login credentials')) {
-    return 'Email/téléphone ou mot de passe incorrect.';
-  }
-  if (message.toLowerCase().includes('network')) {
-    return 'Impossible de contacter le serveur. Vérifiez votre connexion.';
-  }
-  return 'Une erreur est survenue. Réessayez.';
-}
-
-export default function LoginScreen() {
+export default function LoginScreen({ onNavigateToSignup }: Props) {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [staySignedIn, setStaySignedIn] = useState(false);
@@ -188,7 +176,7 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.footer}>
-              <Pressable>
+              <Pressable onPress={onNavigateToSignup}>
                 <Text style={styles.footerLink}>
                   Pas de compte ? <Text style={styles.footerLinkAccent}>Créer un compte</Text>
                 </Text>
