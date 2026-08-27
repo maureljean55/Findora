@@ -8,11 +8,11 @@ import {
   Text,
   View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
+import AuthHeader from '../components/AuthHeader';
 import GoogleIcon from '../components/icons/GoogleIcon';
 import { supabase } from '../lib/supabase';
 import { EMAIL_REGEX, PHONE_REGEX, normalizePhone, translateAuthError } from '../utils/validation';
@@ -23,10 +23,11 @@ type Errors = {
 };
 
 type Props = {
+  onNavigateBack: () => void;
   onNavigateToSignup: () => void;
 };
 
-export default function LoginScreen({ onNavigateToSignup }: Props) {
+export default function LoginScreen({ onNavigateBack, onNavigateToSignup }: Props) {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [staySignedIn, setStaySignedIn] = useState(false);
@@ -86,157 +87,119 @@ export default function LoginScreen({ onNavigateToSignup }: Props) {
   };
 
   return (
-    <LinearGradient
-      colors={[colors.screenGradientTop, colors.screenGradientBottom]}
-      style={styles.flex}
-    >
+    <View style={styles.flex}>
+      <AuthHeader title={'Bonjour,\nConnexion !'} onBack={onNavigateBack} />
+
       <KeyboardAvoidingView
-        style={styles.flex}
+        style={styles.sheet}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.tagline}>
-            <Text style={styles.taglineQuestion}>Objet perdu ?{'\n'}</Text>
-            <Text style={styles.taglineAnswer}>Nous le retrouvons.</Text>
-          </Text>
+          <TextField
+            label="Email ou téléphone"
+            placeholder="vous@exemple.com"
+            value={identifier}
+            onChangeText={setIdentifier}
+            error={errors.identifier}
+            keyboardType="email-address"
+            variant="underline"
+          />
 
-          <View style={styles.card}>
-            <Text style={styles.title}>Connexion</Text>
-            <Text style={styles.subtitle}>Accédez à votre compte Findora</Text>
+          <TextField
+            label="Mot de passe"
+            placeholder="••••••••"
+            value={password}
+            onChangeText={setPassword}
+            error={errors.password}
+            secure
+            variant="underline"
+          />
 
-            <View style={styles.form}>
-              <TextField
-                label="Email ou numéro de téléphone"
-                placeholder="vous@exemple.com"
-                value={identifier}
-                onChangeText={setIdentifier}
-                error={errors.identifier}
-                keyboardType="email-address"
-                icon="at"
+          <View style={styles.row}>
+            <Pressable
+              style={styles.checkboxRow}
+              onPress={() => setStaySignedIn((value) => !value)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: staySignedIn }}
+            >
+              <MaterialCommunityIcons
+                name={staySignedIn ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                size={20}
+                color={staySignedIn ? colors.accent : colors.textSecondary}
               />
+              <Text style={styles.checkboxLabel}>Rester connecté</Text>
+            </Pressable>
 
-              <TextField
-                label="Mot de passe"
-                placeholder="••••••••"
-                value={password}
-                onChangeText={setPassword}
-                error={errors.password}
-                secure
-                icon="lock-outline"
-              />
+            <Pressable>
+              <Text style={styles.link}>Mot de passe oublié ?</Text>
+            </Pressable>
+          </View>
 
-              <View style={styles.row}>
-                <Pressable
-                  style={styles.checkboxRow}
-                  onPress={() => setStaySignedIn((value) => !value)}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: staySignedIn }}
-                >
-                  <MaterialCommunityIcons
-                    name={staySignedIn ? 'checkbox-marked' : 'checkbox-blank-outline'}
-                    size={20}
-                    color={staySignedIn ? colors.accent : colors.textSecondary}
-                  />
-                  <Text style={styles.checkboxLabel}>Rester connecté</Text>
-                </Pressable>
+          {formError && <Text style={styles.formError}>{formError}</Text>}
+          {formSuccess && <Text style={styles.formSuccess}>Connexion réussie !</Text>}
 
-                <Pressable>
-                  <Text style={styles.link}>Mot de passe oublié ?</Text>
-                </Pressable>
-              </View>
+          <Button
+            label="Se connecter"
+            variant="gradient"
+            onPress={handleLogin}
+            loading={isSubmitting}
+          />
 
-              {formError && <Text style={styles.formError}>{formError}</Text>}
-              {formSuccess && <Text style={styles.formSuccess}>Connexion réussie !</Text>}
+          <View style={styles.separatorRow}>
+            <View style={styles.separatorLine} />
+            <Text style={styles.separatorText}>ou continuer avec</Text>
+            <View style={styles.separatorLine} />
+          </View>
 
-              <Button label="Se connecter" onPress={handleLogin} loading={isSubmitting} />
+          <View style={styles.socialButtons}>
+            <Button
+              label="Continuer avec Google"
+              variant="secondary"
+              onPress={handleGoogleLogin}
+              icon={<GoogleIcon size={18} />}
+            />
+            <Button
+              label="Continuer avec Apple"
+              variant="secondary"
+              onPress={handleAppleLogin}
+              icon={<MaterialCommunityIcons name="apple" size={18} color={colors.textPrimary} />}
+            />
+          </View>
 
-              <View style={styles.separatorRow}>
-                <View style={styles.separatorLine} />
-                <Text style={styles.separatorText}>ou continuer avec</Text>
-                <View style={styles.separatorLine} />
-              </View>
+          <View style={styles.footer}>
+            <Pressable onPress={onNavigateToSignup} style={styles.footerLinkWrap}>
+              <Text style={styles.footerLink}>Pas de compte ?</Text>
+              <Text style={styles.footerLinkAccent}>Créer un compte</Text>
+            </Pressable>
 
-              <View style={styles.socialButtons}>
-                <Button
-                  label="Continuer avec Google"
-                  variant="secondary"
-                  onPress={handleGoogleLogin}
-                  icon={<GoogleIcon size={18} />}
-                />
-                <Button
-                  label="Continuer avec Apple"
-                  variant="secondary"
-                  onPress={handleAppleLogin}
-                  icon={<MaterialCommunityIcons name="apple" size={18} color={colors.textPrimary} />}
-                />
-              </View>
-            </View>
-
-            <View style={styles.footer}>
-              <Pressable onPress={onNavigateToSignup}>
-                <Text style={styles.footerLink}>
-                  Pas de compte ? <Text style={styles.footerLinkAccent}>Créer un compte</Text>
-                </Text>
-              </Pressable>
-
-              <Pressable style={styles.anonymousLink}>
-                <MaterialCommunityIcons name="flash-outline" size={16} color={colors.accent} />
-                <Text style={styles.anonymousLinkText}>Déclarer un objet sans compte</Text>
-                <MaterialCommunityIcons name="chevron-right" size={16} color={colors.accent} />
-              </Pressable>
-            </View>
+            <Pressable style={styles.anonymousLink}>
+              <MaterialCommunityIcons name="flash-outline" size={16} color={colors.accent} />
+              <Text style={styles.anonymousLinkText}>Déclarer un objet sans compte</Text>
+              <MaterialCommunityIcons name="chevron-right" size={16} color={colors.accent} />
+            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
+    backgroundColor: colors.background,
+  },
+  sheet: {
+    flex: 1,
+    backgroundColor: colors.background,
   },
   scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  tagline: {
-    textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 30,
-  },
-  taglineQuestion: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  taglineAnswer: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: colors.accent,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  subtitle: {
-    marginTop: 4,
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  form: {
-    marginTop: 28,
-    gap: 16,
+    padding: 28,
+    paddingTop: 28,
+    gap: 18,
   },
   row: {
     flexDirection: 'row',
@@ -285,17 +248,22 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   footer: {
-    marginTop: 28,
+    marginTop: 10,
     alignItems: 'center',
     gap: 16,
+  },
+  footerLinkWrap: {
+    alignSelf: 'flex-end',
+    alignItems: 'flex-end',
   },
   footerLink: {
     fontSize: 14,
     color: colors.textSecondary,
   },
   footerLinkAccent: {
+    fontSize: 14,
     color: colors.accent,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   anonymousLink: {
     flexDirection: 'row',

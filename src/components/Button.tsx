@@ -1,11 +1,12 @@
 import React from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../theme/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, splashColors } from '../theme/colors';
 
 type Props = {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'gradient';
   icon?: React.ReactNode;
   loading?: boolean;
   disabled?: boolean;
@@ -20,6 +21,7 @@ export default function Button({
   disabled = false,
 }: Props) {
   const isPrimary = variant === 'primary';
+  const isGradient = variant === 'gradient';
 
   return (
     <Pressable
@@ -27,17 +29,32 @@ export default function Button({
       disabled={disabled || loading}
       style={({ pressed }) => [
         styles.base,
-        isPrimary ? styles.primary : styles.secondary,
+        isPrimary && styles.primary,
+        variant === 'secondary' && styles.secondary,
+        isGradient && styles.gradientBase,
         (disabled || loading) && styles.disabled,
         pressed && !disabled && !loading && styles.pressed,
       ]}
     >
+      {isGradient && (
+        <LinearGradient
+          colors={[splashColors.gradientTop, splashColors.gradientBottom]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      )}
       {loading ? (
-        <ActivityIndicator color={isPrimary ? colors.accentText : colors.accent} />
+        <ActivityIndicator color={isPrimary || isGradient ? colors.accentText : colors.accent} />
       ) : (
         <View style={styles.content}>
           {icon}
-          <Text style={[styles.label, isPrimary ? styles.primaryLabel : styles.secondaryLabel]}>
+          <Text
+            style={[
+              styles.label,
+              isPrimary || isGradient ? styles.primaryLabel : styles.secondaryLabel,
+            ]}
+          >
             {label}
           </Text>
         </View>
@@ -66,6 +83,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderWidth: 1.5,
     borderColor: colors.border,
+  },
+  gradientBase: {
+    height: 54,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: splashColors.gradientBottom,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    ...Platform.select({ android: { elevation: 5 } }),
   },
   disabled: {
     opacity: 0.5,
