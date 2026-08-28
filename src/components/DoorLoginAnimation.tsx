@@ -19,9 +19,12 @@ export default function DoorLoginAnimation({ phase, onPhaseComplete }: Props) {
   const crossScale = useRef(new Animated.Value(0.5)).current;
 
   useEffect(() => {
+    let completeTimer: ReturnType<typeof setTimeout> | undefined;
+
     if (phase === 'checking') {
       characterX.setValue(0);
       characterOpacity.setValue(1);
+      doorOpenAnim.setValue(0);
       crossOpacity.setValue(0);
       crossScale.setValue(0.5);
 
@@ -30,18 +33,16 @@ export default function DoorLoginAnimation({ phase, onPhaseComplete }: Props) {
           toValue: 1,
           duration: 250,
           easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
         Animated.timing(characterX, {
           toValue: WALK_DISTANCE * 0.55,
           duration: 450,
           easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
       ]).start();
     }
-
-    let completeTimer: ReturnType<typeof setTimeout> | undefined;
 
     if (phase === 'success') {
       Animated.sequence([
@@ -49,12 +50,12 @@ export default function DoorLoginAnimation({ phase, onPhaseComplete }: Props) {
           toValue: WALK_DISTANCE,
           duration: 320,
           easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
         Animated.timing(characterOpacity, {
           toValue: 0,
           duration: 220,
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
       ]).start();
 
@@ -67,13 +68,13 @@ export default function DoorLoginAnimation({ phase, onPhaseComplete }: Props) {
           toValue: WALK_DISTANCE * 0.75,
           duration: 180,
           easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
         Animated.spring(characterX, {
           toValue: WALK_DISTANCE * 0.4,
           friction: 4,
           tension: 60,
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
       ]).start();
 
@@ -83,23 +84,19 @@ export default function DoorLoginAnimation({ phase, onPhaseComplete }: Props) {
           Animated.timing(crossOpacity, {
             toValue: 1,
             duration: 180,
-            useNativeDriver: true,
+            useNativeDriver: false,
           }),
           Animated.timing(crossScale, {
             toValue: 1,
             duration: 220,
             easing: Easing.out(Easing.back(1.5)),
-            useNativeDriver: true,
+            useNativeDriver: false,
           }),
         ]),
       ]).start();
 
       completeTimer = setTimeout(() => onPhaseComplete?.(), 1600);
     }
-
-    return () => {
-      if (completeTimer) clearTimeout(completeTimer);
-    };
 
     if (phase === 'idle') {
       characterX.setValue(0);
@@ -108,6 +105,10 @@ export default function DoorLoginAnimation({ phase, onPhaseComplete }: Props) {
       crossOpacity.setValue(0);
       crossScale.setValue(0.5);
     }
+
+    return () => {
+      if (completeTimer) clearTimeout(completeTimer);
+    };
   }, [phase]);
 
   const doorClosedOpacity = doorOpenAnim.interpolate({
