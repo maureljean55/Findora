@@ -144,9 +144,10 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     color: colors.textPrimary,
     height: '100%',
+    ...({ outlineStyle: 'none' } as object),
   },
   inputLight: {
     color: '#FFFFFF',
