@@ -14,6 +14,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors, splashColors } from '../theme/colors';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
+import PhoneField from '../components/PhoneField';
 import GoogleIcon from '../components/icons/GoogleIcon';
 import DoorLoginAnimation, { DoorPhase } from '../components/DoorLoginAnimation';
 import { supabase } from '../lib/supabase';
@@ -23,10 +24,27 @@ type Mode = 'login' | 'signup';
 
 type CountryCode = 'FR' | 'CI';
 
-const COUNTRIES: { code: CountryCode; name: string; flag: string; dial: string }[] = [
-  { code: 'FR', name: 'France', flag: '🇫🇷', dial: '+33' },
-  { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮', dial: '+225' },
+const COUNTRIES: {
+  code: CountryCode;
+  name: string;
+  flag: string;
+  dial: string;
+  // Nombre de chiffres attendu dans le numéro local (hors indicatif)
+  digits: number;
+  // Certains pays (comme la France) affichent le numéro sans le 0 initial
+  stripLeadingZero: boolean;
+}[] = [
+  { code: 'FR', name: 'France', flag: '🇫🇷', dial: '+33', digits: 9, stripLeadingZero: true },
+  { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮', dial: '+225', digits: 10, stripLeadingZero: false },
 ];
+
+const getPhoneDigits = (raw: string, country: (typeof COUNTRIES)[number]) => {
+  let digits = normalizePhone(raw).replace(/\D/g, '');
+  if (country.stripLeadingZero && digits.startsWith('0')) {
+    digits = digits.slice(1);
+  }
+  return digits;
+};
 
 type Errors = {
   fullName?: string;
@@ -39,7 +57,6 @@ type Errors = {
 export default function AuthScreen() {
   const [mode, setMode] = useState<Mode>('login');
   const [staySignedIn, setStaySignedIn] = useState(false);
-  const [isCountryPickerOpen, setIsCountryPickerOpen] = useState(false);
 
   const [fullName, setFullName] = useState('');
   const [identifier, setIdentifier] = useState('');
@@ -79,8 +96,11 @@ export default function AuthScreen() {
       nextErrors.fullName = 'Entrez votre nom et prénom.';
     }
 
-    if (mode === 'signup' && phoneNumber.trim().length < 6) {
-      nextErrors.phoneNumber = 'Entrez un numéro de téléphone valide.';
+    if (mode === 'signup') {
+      const phoneDigits = getPhoneDigits(phoneNumber, selectedCountry);
+      if (phoneDigits.length !== selectedCountry.digits) {
+        nextErrors.phoneNumber = `Entrez un numéro valide pour ${selectedCountry.name} (${selectedCountry.digits} chiffres).`;
+      }
     }
 
     if (!trimmedIdentifier) {
@@ -126,7 +146,7 @@ export default function AuthScreen() {
       setFormSuccess(true);
       setDoorPhase('success');
     } else {
-      const fullPhoneNumber = `${selectedCountry.dial}${normalizePhone(phoneNumber).replace(/^0+/, '')}`;
+      const fullPhoneNumber = `${selectedCountry.dial}${getPhoneDigits(phoneNumber, selectedCountry)}`;
       const options = {
         data: { full_name: fullName.trim(), phone_number: fullPhoneNumber, country },
       };
@@ -184,59 +204,15 @@ export default function AuthScreen() {
             />
 
             {mode === 'signup' && (
-              <View>
-                <Text style={styles.countryLabel}>Pays</Text>
-                <Pressable
-                  style={styles.countrySelect}
-                  onPress={() => setIsCountryPickerOpen((open) => !open)}
-                >
-                  <Text style={styles.countrySelectText}>
-                    {selectedCountry.flag} {selectedCountry.name} ({selectedCountry.dial})
-                  </Text>
-                  <MaterialCommunityIcons
-                    name={isCountryPickerOpen ? 'chevron-up' : 'chevron-down'}
-                    size={20}
-                    color="rgba(255, 255, 255, 0.7)"
-                  />
-                </Pressable>
-
-                {isCountryPickerOpen && (
-                  <View style={styles.countryOptions}>
-                    {COUNTRIES.map((item) => (
-                      <Pressable
-                        key={item.code}
-                        style={styles.countryOption}
-                        onPress={() => {
-                          setCountry(item.code);
-                          setIsCountryPickerOpen(false);
-                        }}
-                      >
-                        <Text style={styles.countryOptionText}>
-                          {item.flag} {item.name} ({item.dial})
-                        </Text>
-                        {country === item.code && (
-                          <MaterialCommunityIcons name="check" size={18} color="#FFFFFF" />
-                        )}
-                      </Pressable>
-                    ))}
-                  </View>
-                )}
-              </View>
-            )}
-
-            {mode === 'signup' && (
-              <TextField
+              <PhoneField
                 label="Numéro de téléphone"
                 placeholder="612345678"
+                countries={COUNTRIES}
+                selectedCountry={selectedCountry}
+                onSelectCountry={(code) => setCountry(code as CountryCode)}
                 value={phoneNumber}
                 onChangeText={setPhoneNumber}
                 error={errors.phoneNumber}
-                keyboardType="phone-pad"
-                textContentType="telephoneNumber"
-                autoComplete="tel"
-                variant="underline"
-                tone="light"
-                icon="phone-outline"
               />
             )}
 
@@ -492,41 +468,6 @@ const styles = StyleSheet.create({
   fields: {
     width: '100%',
     gap: 24,
-  },
-  countryLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: 'rgba(255, 255, 255, 0.85)',
-    marginBottom: 10,
-  },
-  countrySelect: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    borderBottomWidth: 1.5,
-    borderBottomColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  countrySelectText: {
-    fontSize: 15,
-    color: '#FFFFFF',
-  },
-  countryOptions: {
-    marginTop: 8,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    overflow: 'hidden',
-  },
-  countryOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  countryOptionText: {
-    fontSize: 14,
-    color: '#FFFFFF',
   },
   optionsRow: {
     width: '100%',
