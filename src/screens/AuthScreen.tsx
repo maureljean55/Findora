@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
     maxWidth: 420,
     alignSelf: 'center',
     paddingHorizontal: 32,
-    paddingTop: Platform.select({ web: 32, default: 64 }),
+    paddingTop: Platform.select({ web: 32, default: 108 }),
     paddingBottom: 16,
   },
   signupScrollView: {
