@@ -55,7 +55,11 @@ type Errors = {
   confirmPassword?: string;
 };
 
-export default function AuthScreen() {
+type Props = {
+  initialSignedIn?: boolean;
+};
+
+export default function AuthScreen({ initialSignedIn = false }: Props) {
   const [mode, setMode] = useState<Mode>('login');
   const [staySignedIn, setStaySignedIn] = useState(false);
 
@@ -67,7 +71,7 @@ export default function AuthScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [formSuccess, setFormSuccess] = useState(false);
+  const [formSuccess, setFormSuccess] = useState(initialSignedIn);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [doorPhase, setDoorPhase] = useState<DoorPhase>('idle');
