@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import {
+  Dimensions,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -55,11 +55,13 @@ export default function AuthScreen() {
 
   const selectedCountry = COUNTRIES.find((item) => item.code === country)!;
 
-  const { height: windowHeight } = useWindowDimensions();
+  // Captured once on mount so on-screen keyboards (which shrink the visual
+  // viewport on mobile Safari) don't retrigger this and shift the layout.
+  const [initialWindowHeight] = useState(() => Dimensions.get('window').height);
   const isLoginFixed = Platform.OS === 'web' && mode === 'login';
   // Reference height the current spacing was designed for; shrink proportionally below it
   // so the whole login form fits without scrolling on shorter screens.
-  const fitScale = isLoginFixed ? Math.min(1, Math.max(windowHeight / 800, 0.6)) : 1;
+  const fitScale = isLoginFixed ? Math.min(1, Math.max(initialWindowHeight / 800, 0.6)) : 1;
 
   const switchMode = (nextMode: Mode) => {
     if (nextMode === mode) return;
@@ -166,7 +168,6 @@ export default function AuthScreen() {
               height: '100%',
               paddingTop: 40 * fitScale,
               paddingBottom: 16 * fitScale,
-              justifyContent: 'center',
             },
           ]}
           keyboardShouldPersistTaps="handled"
