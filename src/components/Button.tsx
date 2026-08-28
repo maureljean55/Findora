@@ -6,7 +6,7 @@ import { colors, splashColors } from '../theme/colors';
 type Props = {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'gradient';
+  variant?: 'primary' | 'secondary' | 'gradient' | 'light' | 'outline';
   icon?: React.ReactNode;
   loading?: boolean;
   disabled?: boolean;
@@ -22,6 +22,8 @@ export default function Button({
 }: Props) {
   const isPrimary = variant === 'primary';
   const isGradient = variant === 'gradient';
+  const isLight = variant === 'light';
+  const isOutline = variant === 'outline';
 
   return (
     <Pressable
@@ -32,6 +34,8 @@ export default function Button({
         isPrimary && styles.primary,
         variant === 'secondary' && styles.secondary,
         isGradient && styles.gradientBase,
+        isLight && styles.light,
+        isOutline && styles.outline,
         (disabled || loading) && styles.disabled,
         pressed && !disabled && !loading && styles.pressed,
       ]}
@@ -45,14 +49,16 @@ export default function Button({
         />
       )}
       {loading ? (
-        <ActivityIndicator color={isPrimary || isGradient ? colors.accentText : colors.accent} />
+        <ActivityIndicator
+          color={isPrimary || isGradient || isOutline ? colors.accentText : splashColors.searchIcon}
+        />
       ) : (
         <View style={styles.content}>
           {icon}
           <Text
             style={[
               styles.label,
-              isPrimary || isGradient ? styles.primaryLabel : styles.secondaryLabel,
+              isPrimary || isGradient || isOutline ? styles.primaryLabel : styles.secondaryLabel,
             ]}
           >
             {label}
@@ -93,6 +99,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 14,
     ...Platform.select({ android: { elevation: 5 } }),
+  },
+  light: {
+    height: 54,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+  },
+  outline: {
+    height: 54,
+    borderRadius: 999,
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
   },
   disabled: {
     opacity: 0.5,

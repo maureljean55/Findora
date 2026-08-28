@@ -9,6 +9,7 @@ type Props = TextInputProps & {
   secure?: boolean;
   icon?: keyof typeof MaterialCommunityIcons.glyphMap;
   variant?: 'filled' | 'underline';
+  tone?: 'dark' | 'light';
 };
 
 export default function TextField({
@@ -17,35 +18,47 @@ export default function TextField({
   secure = false,
   icon,
   variant = 'filled',
+  tone = 'dark',
   ...inputProps
 }: Props) {
   const [isSecureVisible, setIsSecureVisible] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const hasError = Boolean(error);
   const isUnderline = variant === 'underline';
+  const isLight = tone === 'light';
   const hasValue = typeof inputProps.value === 'string' && inputProps.value.length > 0;
+  const iconColor = isLight ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary;
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, isUnderline && styles.labelUnderline]}>{label}</Text>
+      <Text
+        style={[
+          styles.label,
+          isUnderline && styles.labelUnderline,
+          isLight && styles.labelLight,
+        ]}
+      >
+        {label}
+      </Text>
       <View
         style={[
           styles.inputRow,
           isUnderline && styles.inputRowUnderline,
+          isUnderline && isLight && styles.inputRowUnderlineLight,
           isFocused && (isUnderline ? styles.inputRowUnderlineFocused : styles.inputRowFocused),
           hasError && (isUnderline ? styles.inputRowUnderlineError : styles.inputRowError),
         ]}
       >
-        {icon && !isUnderline && (
+        {icon && (
           <MaterialCommunityIcons
             name={icon}
             size={20}
-            color={isFocused ? colors.accent : colors.textSecondary}
+            color={isFocused && !isLight ? colors.accent : iconColor}
           />
         )}
         <TextInput
-          style={styles.input}
-          placeholderTextColor={colors.placeholder}
+          style={[styles.input, isLight && styles.inputLight]}
+          placeholderTextColor={isLight ? 'rgba(255, 255, 255, 0.45)' : colors.placeholder}
           secureTextEntry={secure && !isSecureVisible}
           autoCapitalize="none"
           autoCorrect={false}
@@ -63,12 +76,12 @@ export default function TextField({
             <MaterialCommunityIcons
               name={isSecureVisible ? 'eye-off-outline' : 'eye-outline'}
               size={20}
-              color={colors.textSecondary}
+              color={iconColor}
             />
           </Pressable>
         )}
         {!secure && isUnderline && hasValue && (
-          <MaterialCommunityIcons name="check" size={18} color={colors.textSecondary} />
+          <MaterialCommunityIcons name="check" size={18} color={iconColor} />
         )}
       </View>
       {hasError && <Text style={styles.error}>{error}</Text>}
@@ -90,6 +103,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.accent,
   },
+  labelLight: {
+    color: 'rgba(255, 255, 255, 0.85)',
+  },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -110,6 +126,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     backgroundColor: 'transparent',
   },
+  inputRowUnderlineLight: {
+    borderBottomColor: 'rgba(255, 255, 255, 0.3)',
+  },
   inputRowFocused: {
     borderColor: colors.accent,
     backgroundColor: colors.background,
@@ -128,6 +147,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.textPrimary,
     height: '100%',
+  },
+  inputLight: {
+    color: '#FFFFFF',
   },
   error: {
     marginTop: 6,
