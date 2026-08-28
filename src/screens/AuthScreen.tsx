@@ -151,40 +151,9 @@ export default function AuthScreen() {
     // TODO: brancher la connexion Apple via Supabase Auth
   };
 
-  return (
-    <LinearGradient
-      colors={[splashColors.gradientTop, splashColors.gradientBottom]}
-      style={styles.flex}
-    >
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            isLoginFixed && {
-              flexGrow: 0,
-              height: '100%',
-              paddingTop: 40 * fitScale,
-              paddingBottom: 16 * fitScale,
-            },
-          ]}
-          keyboardShouldPersistTaps="handled"
-          scrollEnabled={!isLoginFixed}
-        >
-          <View style={[styles.headerMessage, isLoginFixed && { marginBottom: 36 * fitScale }]}>
-            <Text style={styles.headerTitle}>
-              {mode === 'login' ? 'Connexion' : 'Créer un compte'}
-            </Text>
-            <Text style={styles.headerSubtitle}>
-              {mode === 'login'
-                ? 'Accédez à votre compte Findora'
-                : 'Rejoignez Findora en quelques secondes'}
-            </Text>
-          </View>
-
-          <View style={[styles.fields, isLoginFixed && { gap: 24 * fitScale }]}>
+  const formBody = (
+    <>
+      <View style={[styles.fields, isLoginFixed && { gap: 24 * fitScale }]}>
             {mode === 'signup' && (
               <TextField
                 label="Nom complet"
@@ -396,21 +365,75 @@ export default function AuthScreen() {
               </Pressable>
             </>
           )}
+        </>
+  );
 
-          {!isLoginFixed && <View style={styles.spacer} />}
+  return (
+    <LinearGradient
+      colors={[splashColors.gradientTop, splashColors.gradientBottom]}
+      style={styles.flex}
+    >
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {mode === 'signup' ? (
+          <>
+            <View style={styles.signupHeaderWrap}>
+              <Text style={styles.headerTitle}>Créer un compte</Text>
+              <Text style={styles.headerSubtitle}>Rejoignez Findora en quelques secondes</Text>
+            </View>
 
-          <Pressable
-            style={[styles.switchLink, isLoginFixed && { marginTop: 20 * fitScale }]}
-            onPress={() => switchMode(mode === 'login' ? 'signup' : 'login')}
+            <ScrollView
+              style={styles.signupScrollView}
+              contentContainerStyle={styles.signupScrollContent}
+              keyboardShouldPersistTaps="handled"
+            >
+              {formBody}
+            </ScrollView>
+
+            <View style={styles.signupFooterWrap}>
+              <Pressable style={[styles.switchLink, { marginTop: 0 }]} onPress={() => switchMode('login')}>
+                <Text style={styles.switchLinkText}>
+                  Déjà un compte ?{' '}
+                  <Text style={styles.switchLinkTextAccent}>Se connecter</Text>
+                </Text>
+              </Pressable>
+            </View>
+          </>
+        ) : (
+          <ScrollView
+            contentContainerStyle={[
+              styles.scrollContent,
+              isLoginFixed && {
+                flexGrow: 0,
+                height: '100%',
+                paddingTop: 40 * fitScale,
+                paddingBottom: 16 * fitScale,
+              },
+            ]}
+            keyboardShouldPersistTaps="handled"
+            scrollEnabled={!isLoginFixed}
           >
-            <Text style={styles.switchLinkText}>
-              {mode === 'login' ? "Pas de compte ? " : 'Déjà un compte ? '}
-              <Text style={styles.switchLinkTextAccent}>
-                {mode === 'login' ? "S'inscrire" : 'Se connecter'}
+            <View style={[styles.headerMessage, isLoginFixed && { marginBottom: 36 * fitScale }]}>
+              <Text style={styles.headerTitle}>Connexion</Text>
+              <Text style={styles.headerSubtitle}>Accédez à votre compte Findora</Text>
+            </View>
+
+            {formBody}
+
+            {!isLoginFixed && <View style={styles.spacer} />}
+
+            <Pressable
+              style={[styles.switchLink, isLoginFixed && { marginTop: 20 * fitScale }]}
+              onPress={() => switchMode('signup')}
+            >
+              <Text style={styles.switchLinkText}>
+                Pas de compte ? <Text style={styles.switchLinkTextAccent}>S'inscrire</Text>
               </Text>
-            </Text>
-          </Pressable>
-        </ScrollView>
+            </Pressable>
+          </ScrollView>
+        )}
       </KeyboardAvoidingView>
     </LinearGradient>
   );
@@ -430,6 +453,31 @@ const styles = StyleSheet.create({
   headerMessage: {
     width: '100%',
     marginBottom: 36,
+  },
+  signupHeaderWrap: {
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
+    paddingHorizontal: 32,
+    paddingTop: Platform.select({ web: 32, default: 64 }),
+    paddingBottom: 16,
+  },
+  signupScrollView: {
+    flex: 1,
+  },
+  signupScrollContent: {
+    paddingHorizontal: 32,
+    paddingBottom: 24,
+    alignItems: 'center',
+  },
+  signupFooterWrap: {
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
+    paddingHorizontal: 32,
+    paddingTop: 12,
+    paddingBottom: Platform.select({ ios: 24, default: 16 }),
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 26,
