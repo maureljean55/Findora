@@ -18,6 +18,7 @@ import PhoneField from '../components/PhoneField';
 import GoogleIcon from '../components/icons/GoogleIcon';
 import DoorLoginAnimation, { DoorPhase } from '../components/DoorLoginAnimation';
 import { supabase } from '../lib/supabase';
+import { signInWithProvider } from '../lib/oauth';
 import { EMAIL_REGEX, PHONE_REGEX, normalizePhone, translateAuthError } from '../utils/validation';
 
 type Mode = 'login' | 'signup';
@@ -68,6 +69,7 @@ export default function AuthScreen() {
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [doorPhase, setDoorPhase] = useState<DoorPhase>('idle');
 
   const selectedCountry = COUNTRIES.find((item) => item.code === country)!;
@@ -163,12 +165,24 @@ export default function AuthScreen() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // TODO: brancher la connexion Google via Supabase Auth
+  const handleGoogleLogin = async () => {
+    setFormError(null);
+    setFormSuccess(false);
+    setIsGoogleSubmitting(true);
+    try {
+      await signInWithProvider('google');
+      setFormSuccess(true);
+    } catch {
+      setFormError('Impossible de se connecter avec Google. Réessayez.');
+    } finally {
+      setIsGoogleSubmitting(false);
+    }
   };
 
   const handleAppleLogin = () => {
-    // TODO: brancher la connexion Apple via Supabase Auth
+    setFormError(null);
+    setFormSuccess(false);
+    setFormError("La connexion avec Apple arrive bientôt.");
   };
 
   const formBody = (
@@ -322,6 +336,7 @@ export default function AuthScreen() {
                   label="Continuer avec Google"
                   variant="secondary"
                   onPress={handleGoogleLogin}
+                  loading={isGoogleSubmitting}
                   icon={<GoogleIcon size={18} />}
                 />
                 <Button
