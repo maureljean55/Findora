@@ -5,7 +5,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   View,
 } from 'react-native';
@@ -287,12 +286,13 @@ export default function AuthScreen() {
               <Pressable
                 style={styles.staySignedInRow}
                 onPress={() => setStaySignedIn((value) => !value)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: staySignedIn }}
               >
-                <Switch
-                  value={staySignedIn}
-                  onValueChange={setStaySignedIn}
-                  trackColor={{ false: 'rgba(255, 255, 255, 0.2)', true: colors.accent }}
-                  thumbColor="#FFFFFF"
+                <MaterialCommunityIcons
+                  name={staySignedIn ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                  size={20}
+                  color={staySignedIn ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)'}
                 />
                 <Text style={styles.staySignedInText}>Rester connecté</Text>
               </Pressable>
