@@ -170,8 +170,10 @@ export default function AuthScreen() {
     setFormSuccess(false);
     setIsGoogleSubmitting(true);
     try {
-      await signInWithProvider('google');
-      setFormSuccess(true);
+      const completed = await signInWithProvider('google');
+      if (completed) {
+        setFormSuccess(true);
+      }
     } catch {
       setFormError('Impossible de se connecter avec Google. Réessayez.');
     } finally {

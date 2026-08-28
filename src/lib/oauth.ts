@@ -21,14 +21,17 @@ async function createSessionFromUrl(url: string) {
   if (error) throw error;
 }
 
-export async function signInWithProvider(provider: OAuthProvider) {
+// Renvoie true seulement si la connexion est réellement terminée. Sur le
+// web, signInWithOAuth ne fait que déclencher une redirection : la page
+// quitte l'app avant que la connexion Google soit terminée.
+export async function signInWithProvider(provider: OAuthProvider): Promise<boolean> {
   if (Platform.OS === 'web') {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo },
     });
     if (error) throw error;
-    return;
+    return false;
   }
 
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -41,5 +44,7 @@ export async function signInWithProvider(provider: OAuthProvider) {
   const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
   if (result.type === 'success' && result.url) {
     await createSessionFromUrl(result.url);
+    return true;
   }
+  return false;
 }
