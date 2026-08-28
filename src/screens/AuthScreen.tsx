@@ -54,7 +54,6 @@ export default function AuthScreen() {
   const [doorPhase, setDoorPhase] = useState<DoorPhase>('idle');
 
   const selectedCountry = COUNTRIES.find((item) => item.code === country)!;
-  const isWebFixed = Platform.OS === 'web' && mode === 'login';
 
   const switchMode = (nextMode: Mode) => {
     if (nextMode === mode) return;
@@ -153,21 +152,14 @@ export default function AuthScreen() {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            isWebFixed && styles.scrollContentWeb,
-          ]}
-          keyboardShouldPersistTaps="handled"
-          scrollEnabled={!isWebFixed}
-        >
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <View style={styles.headerMessage}>
             <Text style={styles.headerTitle}>
-              {mode === 'login' ? 'Bon retour parmi nous' : 'Créer un compte'}
+              {mode === 'login' ? 'Connexion' : 'Créer un compte'}
             </Text>
             <Text style={styles.headerSubtitle}>
               {mode === 'login'
-                ? 'Connectez-vous pour retrouver ce qui vous appartient'
+                ? 'Accédez à votre compte Findora'
                 : 'Rejoignez Findora en quelques secondes'}
             </Text>
           </View>
@@ -406,13 +398,6 @@ const styles = StyleSheet.create({
     paddingTop: 130,
     paddingBottom: 32,
     alignItems: 'center',
-  },
-  scrollContentWeb: {
-    flexGrow: 0,
-    height: '100%',
-    paddingTop: 32,
-    paddingBottom: 20,
-    justifyContent: 'center',
   },
   headerMessage: {
     width: '100%',
