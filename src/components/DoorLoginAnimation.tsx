@@ -126,18 +126,18 @@ export default function DoorLoginAnimation({ phase, onPhaseComplete }: Props) {
         ]}
       >
         <MaterialCommunityIcons name="walk" size={26} color="#FFFFFF" />
-
-        {phase === 'error' && (
-          <Animated.View
-            style={[
-              styles.cross,
-              { opacity: crossOpacity, transform: [{ scale: crossScale }] },
-            ]}
-          >
-            <MaterialCommunityIcons name="close-circle" size={20} color="#FF5C5C" />
-          </Animated.View>
-        )}
       </Animated.View>
+
+      {phase === 'error' && (
+        <Animated.View
+          style={[
+            styles.cross,
+            { opacity: crossOpacity, transform: [{ scale: crossScale }] },
+          ]}
+        >
+          <MaterialCommunityIcons name="close-circle" size={20} color="#FF5C5C" />
+        </Animated.View>
+      )}
 
       <View style={styles.doorFrame}>
         <Animated.View style={[styles.doorIcon, { opacity: doorClosedOpacity }]}>
@@ -177,7 +177,9 @@ const styles = StyleSheet.create({
   doorIconOverlay: {},
   cross: {
     position: 'absolute',
-    top: -16,
-    left: 3,
+    top: '50%',
+    left: '50%',
+    marginTop: -10,
+    marginLeft: -10,
   },
 });
