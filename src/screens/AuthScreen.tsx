@@ -54,6 +54,7 @@ export default function AuthScreen() {
   const [doorPhase, setDoorPhase] = useState<DoorPhase>('idle');
 
   const selectedCountry = COUNTRIES.find((item) => item.code === country)!;
+  const isWebFixed = Platform.OS === 'web' && mode === 'login';
 
   const switchMode = (nextMode: Mode) => {
     if (nextMode === mode) return;
@@ -153,19 +154,23 @@ export default function AuthScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            isWebFixed && styles.scrollContentWeb,
+          ]}
           keyboardShouldPersistTaps="handled"
+          scrollEnabled={!isWebFixed}
         >
-          {mode === 'login' ? (
-            <View style={styles.iconCircle}>
-              <MaterialCommunityIcons name="magnify" size={46} color="#FFFFFF" />
-            </View>
-          ) : (
-            <View style={styles.headerMessage}>
-              <Text style={styles.headerTitle}>Créer un compte</Text>
-              <Text style={styles.headerSubtitle}>Rejoignez Findora en quelques secondes</Text>
-            </View>
-          )}
+          <View style={styles.headerMessage}>
+            <Text style={styles.headerTitle}>
+              {mode === 'login' ? 'Bon retour parmi nous' : 'Créer un compte'}
+            </Text>
+            <Text style={styles.headerSubtitle}>
+              {mode === 'login'
+                ? 'Connectez-vous pour retrouver ce qui vous appartient'
+                : 'Rejoignez Findora en quelques secondes'}
+            </Text>
+          </View>
 
           <View style={styles.fields}>
             {mode === 'signup' && (
@@ -402,14 +407,12 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     alignItems: 'center',
   },
-  iconCircle: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    alignItems: 'center',
+  scrollContentWeb: {
+    flexGrow: 0,
+    height: '100%',
+    paddingTop: 32,
+    paddingBottom: 20,
     justifyContent: 'center',
-    marginBottom: 36,
   },
   headerMessage: {
     width: '100%',
@@ -553,10 +556,10 @@ const styles = StyleSheet.create({
   },
   spacer: {
     flex: 1,
-    minHeight: 40,
+    minHeight: 20,
   },
   switchLink: {
-    marginTop: 40,
+    marginTop: 20,
   },
   switchLinkText: {
     fontSize: 13,
