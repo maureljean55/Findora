@@ -126,15 +126,6 @@ export default function DoorLoginAnimation({ phase, onPhaseComplete }: Props) {
         ]}
       >
         <MaterialCommunityIcons name="walk" size={26} color="#FFFFFF" />
-      </Animated.View>
-
-      <View style={styles.doorFrame}>
-        <Animated.View style={[styles.doorIcon, { opacity: doorClosedOpacity }]}>
-          <MaterialCommunityIcons name="door" size={30} color="#FFFFFF" />
-        </Animated.View>
-        <Animated.View style={[styles.doorIcon, styles.doorIconOverlay, { opacity: doorOpenOpacity }]}>
-          <MaterialCommunityIcons name="door-open" size={30} color="#FFFFFF" />
-        </Animated.View>
 
         {phase === 'error' && (
           <Animated.View
@@ -146,6 +137,15 @@ export default function DoorLoginAnimation({ phase, onPhaseComplete }: Props) {
             <MaterialCommunityIcons name="close-circle" size={20} color="#FF5C5C" />
           </Animated.View>
         )}
+      </Animated.View>
+
+      <View style={styles.doorFrame}>
+        <Animated.View style={[styles.doorIcon, { opacity: doorClosedOpacity }]}>
+          <MaterialCommunityIcons name="door" size={30} color="#FFFFFF" />
+        </Animated.View>
+        <Animated.View style={[styles.doorIcon, styles.doorIconOverlay, { opacity: doorOpenOpacity }]}>
+          <MaterialCommunityIcons name="door-open" size={30} color="#FFFFFF" />
+        </Animated.View>
       </View>
     </View>
   );
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   doorIconOverlay: {},
   cross: {
     position: 'absolute',
-    top: -14,
-    right: -10,
+    top: -16,
+    left: 3,
   },
 });
