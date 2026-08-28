@@ -14,8 +14,8 @@ export const colors = {
 };
 
 export const splashColors = {
-  gradientTop: '#15304D',
-  gradientBottom: '#3A86C8',
+  gradientTop: '#203042',
+  gradientBottom: '#5684AC',
   glow: '#8FCBF2',
   ring: 'rgba(255, 255, 255, 0.25)',
   searchBubble: '#FFFFFF',
