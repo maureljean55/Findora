@@ -27,28 +27,28 @@ type Slide = {
 const SLIDES: Slide[] = [
   {
     icon: 'magnify',
-    title: 'Bienvenue sur\nFindora',
+    title: 'Bienvenue sur Findora',
     subtitle: 'VOTRE ALLIÉ RETROUVAILLES',
     description:
       "L'application qui relie les personnes ayant perdu un objet à celles qui l'ont trouvé, partout dans le monde.",
   },
   {
     icon: 'camera-plus-outline',
-    title: 'Déclarez en\nquelques secondes',
+    title: 'Déclarez en quelques secondes',
     subtitle: 'PERDU OU TROUVÉ',
     description:
       'Ajoutez une photo, une catégorie et un lieu. Que vous ayez perdu ou trouvé un objet, c’est aussi simple.',
   },
   {
     icon: 'radar',
-    title: 'Un matching\nautomatique',
+    title: 'Un matching automatique',
     subtitle: 'ON S’OCCUPE DU RESTE',
     description:
       'Notre moteur compare en continu les objets perdus et trouvés pour vous proposer les bonnes correspondances.',
   },
   {
     icon: 'shield-check-outline',
-    title: 'Échangez en\ntoute sécurité',
+    title: 'Échangez en toute sécurité',
     subtitle: 'VÉRIFICATION ET MESSAGERIE',
     description:
       'Une vérification anti-fraude et une messagerie interne pour récupérer votre bien sans jamais partager vos coordonnées.',
@@ -56,6 +56,7 @@ const SLIDES: Slide[] = [
 ];
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const SLIDE_PADDING_TOP = Platform.select({ web: 56, default: 156 })!;
 
 type Props = {
   onSkip: () => void;
@@ -175,11 +176,11 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH,
     alignItems: 'center',
     paddingHorizontal: 32,
-    paddingTop: 56,
+    paddingTop: SLIDE_PADDING_TOP,
   },
   watermarkRing: {
     position: 'absolute',
-    top: 40,
+    top: SLIDE_PADDING_TOP - 16,
     width: 280,
     height: 280,
     borderRadius: 140,
@@ -204,6 +205,7 @@ const styles = StyleSheet.create({
     color: splashColors.title,
     textAlign: 'center',
     fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia, serif' }),
+    maxWidth: 250,
   },
   divider: {
     width: 40,
