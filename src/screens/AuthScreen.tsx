@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -53,6 +54,12 @@ export default function AuthScreen() {
   const [doorPhase, setDoorPhase] = useState<DoorPhase>('idle');
 
   const selectedCountry = COUNTRIES.find((item) => item.code === country)!;
+
+  const { height: windowHeight } = useWindowDimensions();
+  const isLoginFixed = Platform.OS === 'web' && mode === 'login';
+  // Reference height the current spacing was designed for; shrink proportionally below it
+  // so the whole login form fits without scrolling on shorter screens.
+  const fitScale = isLoginFixed ? Math.min(1, Math.max(windowHeight / 800, 0.6)) : 1;
 
   const switchMode = (nextMode: Mode) => {
     if (nextMode === mode) return;
@@ -151,8 +158,21 @@ export default function AuthScreen() {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          <View style={styles.headerMessage}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.scrollContent,
+            isLoginFixed && {
+              flexGrow: 0,
+              height: '100%',
+              paddingTop: 40 * fitScale,
+              paddingBottom: 16 * fitScale,
+              justifyContent: 'center',
+            },
+          ]}
+          keyboardShouldPersistTaps="handled"
+          scrollEnabled={!isLoginFixed}
+        >
+          <View style={[styles.headerMessage, isLoginFixed && { marginBottom: 36 * fitScale }]}>
             <Text style={styles.headerTitle}>
               {mode === 'login' ? 'Connexion' : 'Créer un compte'}
             </Text>
@@ -163,7 +183,7 @@ export default function AuthScreen() {
             </Text>
           </View>
 
-          <View style={styles.fields}>
+          <View style={[styles.fields, isLoginFixed && { gap: 24 * fitScale }]}>
             {mode === 'signup' && (
               <TextField
                 label="Nom complet"
@@ -282,7 +302,7 @@ export default function AuthScreen() {
           </View>
 
           {mode === 'login' && (
-            <View style={styles.optionsRow}>
+            <View style={[styles.optionsRow, isLoginFixed && { marginTop: 20 * fitScale }]}>
               <Pressable
                 style={styles.staySignedInRow}
                 onPress={() => setStaySignedIn((value) => !value)}
@@ -312,7 +332,7 @@ export default function AuthScreen() {
             </Text>
           )}
 
-          <View style={styles.buttonSpacer} />
+          <View style={[styles.buttonSpacer, isLoginFixed && { height: 24 * fitScale }]} />
 
           {mode === 'login' ? (
             <Pressable
@@ -340,13 +360,18 @@ export default function AuthScreen() {
 
           {mode === 'login' && (
             <>
-              <View style={styles.separatorRow}>
+              <View
+                style={[
+                  styles.separatorRow,
+                  isLoginFixed && { marginTop: 24 * fitScale, marginBottom: 16 * fitScale },
+                ]}
+              >
                 <View style={styles.separatorLine} />
                 <Text style={styles.separatorText}>ou continuer avec</Text>
                 <View style={styles.separatorLine} />
               </View>
 
-              <View style={styles.socialButtons}>
+              <View style={[styles.socialButtons, isLoginFixed && { gap: 12 * fitScale }]}>
                 <Button
                   label="Continuer avec Google"
                   variant="secondary"
@@ -361,7 +386,9 @@ export default function AuthScreen() {
                 />
               </View>
 
-              <Pressable style={styles.anonymousLink}>
+              <Pressable
+                style={[styles.anonymousLink, isLoginFixed && { marginTop: 16 * fitScale }]}
+              >
                 <MaterialCommunityIcons name="flash-outline" size={16} color="#FFFFFF" />
                 <Text style={styles.anonymousLinkText}>Déclarer un objet sans compte</Text>
                 <MaterialCommunityIcons name="chevron-right" size={16} color="#FFFFFF" />
@@ -369,10 +396,10 @@ export default function AuthScreen() {
             </>
           )}
 
-          <View style={styles.spacer} />
+          {!isLoginFixed && <View style={styles.spacer} />}
 
           <Pressable
-            style={styles.switchLink}
+            style={[styles.switchLink, isLoginFixed && { marginTop: 20 * fitScale }]}
             onPress={() => switchMode(mode === 'login' ? 'signup' : 'login')}
           >
             <Text style={styles.switchLinkText}>
