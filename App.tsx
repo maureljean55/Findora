@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import SplashScreen from './src/screens/SplashScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import AuthScreen from './src/screens/AuthScreen';
-import HomeScreen from './src/screens/HomeScreen';
+import DashboardScreen from './src/screens/DashboardScreen';
 import { supabase } from './src/lib/supabase';
 import { linkPendingPhone } from './src/lib/linkPendingPhone';
 
@@ -38,7 +38,7 @@ export default function App() {
         <OnboardingScreen onSkip={navigateToAuth} onFinish={navigateToAuth} />
       )}
       {screen === 'auth' && <AuthScreen onAuthenticated={navigateToHome} />}
-      {screen === 'home' && <HomeScreen onSignedOut={navigateToAuth} />}
+      {screen === 'home' && <DashboardScreen onSignedOut={navigateToAuth} />}
       <StatusBar style="auto" />
     </>
   );
