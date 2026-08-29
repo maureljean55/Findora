@@ -13,6 +13,13 @@ export const colors = {
   inputFill: '#F2F5F9',
 };
 
+export const statusColors = {
+  pending: { background: '#FFF3D6', text: '#9A6A00' },
+  matched: { background: '#DFF3E6', text: '#1D7A46' },
+  resolved: { background: '#E1EAFB', text: '#2F55C4' },
+  archived: { background: '#EDEFF2', text: '#6B7280' },
+};
+
 export const splashColors = {
   gradientTop: '#203042',
   gradientBottom: '#5684AC',
