@@ -18,6 +18,7 @@ import PhoneField from '../components/PhoneField';
 import GoogleIcon from '../components/icons/GoogleIcon';
 import DoorLoginAnimation, { DoorPhase } from '../components/DoorLoginAnimation';
 import { supabase } from '../lib/supabase';
+import { linkPendingPhone } from '../lib/linkPendingPhone';
 import { signInWithProvider } from '../lib/oauth';
 import { EMAIL_REGEX, PHONE_REGEX, normalizePhone, translateAuthError } from '../utils/validation';
 
@@ -111,6 +112,10 @@ export default function AuthScreen({ onAuthenticated }: Props) {
 
     if (!trimmedIdentifier) {
       nextErrors.identifier = 'Ce champ est requis.';
+    } else if (mode === 'signup') {
+      if (!EMAIL_REGEX.test(trimmedIdentifier)) {
+        nextErrors.identifier = 'Entrez un email valide.';
+      }
     } else if (!EMAIL_REGEX.test(trimmedIdentifier) && !PHONE_REGEX.test(trimmedIdentifier)) {
       nextErrors.identifier = 'Entrez un email ou un numéro de téléphone valide.';
     }
@@ -139,27 +144,48 @@ export default function AuthScreen({ onAuthenticated }: Props) {
 
     if (mode === 'login') {
       setDoorPhase('checking');
-      const credentials = EMAIL_REGEX.test(trimmedIdentifier)
-        ? { email: trimmedIdentifier, password }
-        : { phone: normalizePhone(trimmedIdentifier), password };
-      const { error } = await supabase.auth.signInWithPassword(credentials);
+
+      let loginEmail = trimmedIdentifier;
+      if (!EMAIL_REGEX.test(trimmedIdentifier)) {
+        // Le téléphone n'est pas une identité Supabase native ici : on
+        // retrouve l'email associé via la table profiles (voir
+        // linkPendingPhone), sans passer par le système phone/SMS de Supabase.
+        const { data: resolvedEmail, error: lookupError } = await supabase.rpc('email_for_phone', {
+          phone_input: normalizePhone(trimmedIdentifier),
+        });
+        if (lookupError || !resolvedEmail) {
+          setIsSubmitting(false);
+          setFormError(translateAuthError('Invalid login credentials'));
+          setDoorPhase('error');
+          return;
+        }
+        loginEmail = resolvedEmail;
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password,
+      });
       setIsSubmitting(false);
       if (error) {
         setFormError(translateAuthError(error.message));
         setDoorPhase('error');
         return;
       }
+      // Rattrape le cas d'un compte créé avant confirmation de l'email : le
+      // téléphone en attente n'a pas encore pu être lié à ce moment-là.
+      linkPendingPhone(data.user);
       setFormSuccess(true);
       setDoorPhase('success');
     } else {
       const fullPhoneNumber = `${selectedCountry.dial}${getPhoneDigits(phoneNumber, selectedCountry)}`;
-      const options = {
-        data: { full_name: fullName.trim(), phone_number: fullPhoneNumber, country },
-      };
-      const credentials = EMAIL_REGEX.test(trimmedIdentifier)
-        ? { email: trimmedIdentifier, password, options }
-        : { phone: normalizePhone(trimmedIdentifier), password, options };
-      const { data, error } = await supabase.auth.signUp(credentials);
+      const { data, error } = await supabase.auth.signUp({
+        email: trimmedIdentifier,
+        password,
+        options: {
+          data: { full_name: fullName.trim(), pending_phone: fullPhoneNumber, country },
+        },
+      });
       setIsSubmitting(false);
       if (error) {
         setFormError(translateAuthError(error.message));
@@ -167,8 +193,11 @@ export default function AuthScreen({ onAuthenticated }: Props) {
       }
       setFormSuccess(true);
       // Une session est déjà active si la confirmation par email est désactivée
-      // côté Supabase ; sinon il faut attendre que l'utilisateur confirme.
+      // côté Supabase ; sinon il faut attendre que l'utilisateur confirme. Le
+      // téléphone (pending_phone) est lié comme identité de connexion dans
+      // linkPendingPhone, appelé dès qu'une session authentifiée existe.
       if (data.session) {
+        await linkPendingPhone(data.session.user);
         onAuthenticated?.();
       }
     }
@@ -216,14 +245,14 @@ export default function AuthScreen({ onAuthenticated }: Props) {
             )}
 
             <TextField
-              label="Email"
-              placeholder="Entrez votre email"
+              label={mode === 'login' ? 'Email ou téléphone' : 'Email'}
+              placeholder={mode === 'login' ? 'Entrez votre email ou téléphone' : 'Entrez votre email'}
               value={identifier}
               onChangeText={setIdentifier}
               error={errors.identifier}
-              keyboardType="email-address"
-              textContentType="emailAddress"
-              autoComplete="email"
+              keyboardType={mode === 'login' ? 'default' : 'email-address'}
+              textContentType={mode === 'login' ? 'username' : 'emailAddress'}
+              autoComplete={mode === 'login' ? 'username' : 'email'}
               variant="underline"
               tone="light"
               icon="account-outline"

@@ -5,6 +5,7 @@ import OnboardingScreen from './src/screens/OnboardingScreen';
 import AuthScreen from './src/screens/AuthScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import { supabase } from './src/lib/supabase';
+import { linkPendingPhone } from './src/lib/linkPendingPhone';
 
 type Screen = 'checking' | 'splash' | 'onboarding' | 'auth' | 'home';
 
@@ -16,6 +17,9 @@ export default function App() {
     // qui recharge toute la page) doit sauter le splash/onboarding et l'écran
     // de connexion pour aller directement à l'accueil.
     supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        linkPendingPhone(data.session.user);
+      }
       setScreen(data.session ? 'home' : 'splash');
     });
   }, []);
