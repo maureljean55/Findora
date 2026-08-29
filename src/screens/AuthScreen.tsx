@@ -56,10 +56,10 @@ type Errors = {
 };
 
 type Props = {
-  initialSignedIn?: boolean;
+  onAuthenticated?: () => void;
 };
 
-export default function AuthScreen({ initialSignedIn = false }: Props) {
+export default function AuthScreen({ onAuthenticated }: Props) {
   const [mode, setMode] = useState<Mode>('login');
   const [staySignedIn, setStaySignedIn] = useState(false);
 
@@ -71,7 +71,7 @@ export default function AuthScreen({ initialSignedIn = false }: Props) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [formSuccess, setFormSuccess] = useState(initialSignedIn);
+  const [formSuccess, setFormSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [doorPhase, setDoorPhase] = useState<DoorPhase>('idle');
@@ -159,13 +159,18 @@ export default function AuthScreen({ initialSignedIn = false }: Props) {
       const credentials = EMAIL_REGEX.test(trimmedIdentifier)
         ? { email: trimmedIdentifier, password, options }
         : { phone: normalizePhone(trimmedIdentifier), password, options };
-      const { error } = await supabase.auth.signUp(credentials);
+      const { data, error } = await supabase.auth.signUp(credentials);
       setIsSubmitting(false);
       if (error) {
         setFormError(translateAuthError(error.message));
         return;
       }
       setFormSuccess(true);
+      // Une session est déjà active si la confirmation par email est désactivée
+      // côté Supabase ; sinon il faut attendre que l'utilisateur confirme.
+      if (data.session) {
+        onAuthenticated?.();
+      }
     }
   };
 
@@ -177,6 +182,7 @@ export default function AuthScreen({ initialSignedIn = false }: Props) {
       const completed = await signInWithProvider('google');
       if (completed) {
         setFormSuccess(true);
+        onAuthenticated?.();
       }
     } catch {
       setFormError('Impossible de se connecter avec Google. Réessayez.');
@@ -311,7 +317,13 @@ export default function AuthScreen({ initialSignedIn = false }: Props) {
               ) : (
                 <DoorLoginAnimation
                   phase={doorPhase}
-                  onPhaseComplete={() => setDoorPhase('idle')}
+                  onPhaseComplete={() => {
+                    if (doorPhase === 'success') {
+                      onAuthenticated?.();
+                    } else {
+                      setDoorPhase('idle');
+                    }
+                  }}
                 />
               )}
             </Pressable>

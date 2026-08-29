@@ -3,24 +3,20 @@ import { StatusBar } from 'expo-status-bar';
 import SplashScreen from './src/screens/SplashScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import AuthScreen from './src/screens/AuthScreen';
+import HomeScreen from './src/screens/HomeScreen';
 import { supabase } from './src/lib/supabase';
 
-type Screen = 'checking' | 'splash' | 'onboarding' | 'auth';
+type Screen = 'checking' | 'splash' | 'onboarding' | 'auth' | 'home';
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('checking');
-  const [hasExistingSession, setHasExistingSession] = useState(false);
 
   useEffect(() => {
     // Une session déjà active (ex: retour de connexion Google sur le web,
-    // qui recharge toute la page) doit sauter le splash/onboarding.
+    // qui recharge toute la page) doit sauter le splash/onboarding et l'écran
+    // de connexion pour aller directement à l'accueil.
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        setHasExistingSession(true);
-        setScreen('auth');
-      } else {
-        setScreen('splash');
-      }
+      setScreen(data.session ? 'home' : 'splash');
     });
   }, []);
 
@@ -29,6 +25,7 @@ export default function App() {
   }, []);
 
   const navigateToAuth = useCallback(() => setScreen('auth'), []);
+  const navigateToHome = useCallback(() => setScreen('home'), []);
 
   return (
     <>
@@ -36,7 +33,8 @@ export default function App() {
       {screen === 'onboarding' && (
         <OnboardingScreen onSkip={navigateToAuth} onFinish={navigateToAuth} />
       )}
-      {screen === 'auth' && <AuthScreen initialSignedIn={hasExistingSession} />}
+      {screen === 'auth' && <AuthScreen onAuthenticated={navigateToHome} />}
+      {screen === 'home' && <HomeScreen onSignedOut={navigateToAuth} />}
       <StatusBar style="auto" />
     </>
   );
