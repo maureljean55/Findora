@@ -1,20 +1,20 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, Platform, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, Easing, Image, Platform, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { orbitPalette, splashColors } from '../theme/colors';
+import { splashColors } from '../theme/colors';
 
 type OrbitItem = {
-  key: keyof typeof orbitPalette;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  key: string;
+  image: number;
   baseAngle: number;
 };
 
 const ORBIT_ITEMS: OrbitItem[] = [
-  { key: 'key', icon: 'key-outline', baseAngle: 50 },
-  { key: 'wallet', icon: 'wallet-outline', baseAngle: 140 },
-  { key: 'bag', icon: 'bag-personal-outline', baseAngle: 230 },
-  { key: 'glasses', icon: 'glasses', baseAngle: 320 },
+  { key: 'key', image: require('../../assets/orbit-key.png'), baseAngle: 50 },
+  { key: 'wallet', image: require('../../assets/orbit-wallet.png'), baseAngle: 140 },
+  { key: 'bag', image: require('../../assets/orbit-bag.png'), baseAngle: 230 },
+  { key: 'audio', image: require('../../assets/orbit-audio.png'), baseAngle: 320 },
 ];
 
 const RING_SIZE = 240;
@@ -129,8 +129,7 @@ export default function SplashScreen({ onFinished }: Props) {
             !reduceMotion && { transform: [{ rotate: ringRotation }] },
           ]}
         >
-          {items.map(({ key, icon, baseAngle }) => {
-            const palette = orbitPalette[key];
+          {items.map(({ key, image, baseAngle }) => {
             const counterRotation = orbitValue.interpolate({
               inputRange: [0, 1],
               outputRange: [`${-baseAngle}deg`, `${-baseAngle - 360}deg`],
@@ -147,11 +146,12 @@ export default function SplashScreen({ onFinished }: Props) {
                 ]}
               >
                 <Animated.View
-                  style={!reduceMotion && { transform: [{ rotate: counterRotation }] }}
+                  style={[
+                    styles.bubbleShadow,
+                    !reduceMotion && { transform: [{ rotate: counterRotation }] },
+                  ]}
                 >
-                  <View style={[styles.iconBubble, { backgroundColor: palette.background }]}>
-                    <MaterialCommunityIcons name={icon} size={24} color={palette.icon} />
-                  </View>
+                  <Image source={image} style={styles.iconBubble} resizeMode="cover" />
                 </Animated.View>
               </View>
             );
@@ -215,12 +215,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  bubbleShadow: {
+    borderRadius: BUBBLE_SIZE / 2,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    ...Platform.select({ android: { elevation: 6 } }),
+  },
   iconBubble: {
     width: BUBBLE_SIZE,
     height: BUBBLE_SIZE,
     borderRadius: BUBBLE_SIZE / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    overflow: 'hidden',
   },
   searchBubble: {
     width: 96,

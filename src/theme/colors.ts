@@ -23,10 +23,3 @@ export const splashColors = {
   title: '#FFFFFF',
   slogan: 'rgba(255, 255, 255, 0.75)',
 };
-
-export const orbitPalette = {
-  bag: { background: '#FBDCE7', icon: '#C2185B' },
-  key: { background: '#FBE3B0', icon: '#B9720A' },
-  glasses: { background: '#D8ECFB', icon: '#1D6FB8' },
-  wallet: { background: '#D4F3E1', icon: '#17875A' },
-};
