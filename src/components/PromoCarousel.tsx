@@ -1,21 +1,7 @@
-import React, { useState } from 'react';
-import {
-  Dimensions,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, { useRef, useState } from 'react';
+import { Animated, PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SIDE_PADDING = 20;
-const GAP = 12;
-const CARD_WIDTH = SCREEN_WIDTH - SIDE_PADDING * 2;
-const STEP = CARD_WIDTH + GAP;
 
 export type PromoCard = {
   key: string;
@@ -29,44 +15,60 @@ type Props = {
   cards: PromoCard[];
 };
 
-export default function PromoCarousel({ cards }: Props) {
-  const [index, setIndex] = useState(0);
+const SWIPE_THRESHOLD = 40;
 
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const nextIndex = Math.round(event.nativeEvent.contentOffset.x / STEP);
-    setIndex((prev) => (prev === nextIndex ? prev : nextIndex));
+export default function PromoCarousel({ cards }: Props) {
+  const [index, setIndexState] = useState(0);
+  const indexRef = useRef(0);
+  const opacity = useRef(new Animated.Value(1)).current;
+
+  const goTo = (updater: number | ((prev: number) => number)) => {
+    const requested = typeof updater === 'function' ? (updater as (prev: number) => number)(indexRef.current) : updater;
+    const clamped = Math.max(0, Math.min(cards.length - 1, requested));
+    if (clamped === indexRef.current) return;
+    indexRef.current = clamped;
+
+    Animated.timing(opacity, { toValue: 0, duration: 120, useNativeDriver: true }).start(() => {
+      setIndexState(clamped);
+      Animated.timing(opacity, { toValue: 1, duration: 150, useNativeDriver: true }).start();
+    });
   };
 
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_evt, gesture) =>
+        Math.abs(gesture.dx) > 12 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
+      onPanResponderRelease: (_evt, gesture) => {
+        if (gesture.dx <= -SWIPE_THRESHOLD) {
+          goTo((prev) => prev + 1);
+        } else if (gesture.dx >= SWIPE_THRESHOLD) {
+          goTo((prev) => prev - 1);
+        }
+      },
+    })
+  ).current;
+
   if (cards.length === 0) return null;
+  const card = cards[index];
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-        onMomentumScrollEnd={handleScroll}
-        scrollEventThrottle={16}
-        decelerationRate="fast"
-        snapToInterval={STEP}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {cards.map((card) => (
-          <LinearGradient key={card.key} colors={card.colors} style={styles.card}>
-            <View style={styles.iconCircle}>
-              <MaterialCommunityIcons name={card.icon} size={22} color="#FFFFFF" />
-            </View>
-            <Text style={styles.title}>{card.title}</Text>
-            <Text style={styles.body}>{card.body}</Text>
-          </LinearGradient>
-        ))}
-      </ScrollView>
+      <LinearGradient colors={card.colors} style={styles.card} {...panResponder.panHandlers}>
+        <Animated.View style={{ opacity }}>
+          <View style={styles.iconCircle}>
+            <MaterialCommunityIcons name={card.icon} size={22} color="#FFFFFF" />
+          </View>
+          <Text style={styles.title}>{card.title}</Text>
+          <Text style={styles.body}>{card.body}</Text>
+        </Animated.View>
+      </LinearGradient>
 
       {cards.length > 1 && (
         <View style={styles.dots}>
-          {cards.map((card, dotIndex) => (
-            <View key={card.key} style={[styles.dot, dotIndex === index && styles.dotActive]} />
+          {cards.map((c, dotIndex) => (
+            <Pressable key={c.key} hitSlop={8} onPress={() => goTo(dotIndex)}>
+              <View style={[styles.dot, dotIndex === index && styles.dotActive]} />
+            </Pressable>
           ))}
         </View>
       )}
@@ -77,13 +79,9 @@ export default function PromoCarousel({ cards }: Props) {
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,
-  },
-  scrollContent: {
-    paddingHorizontal: SIDE_PADDING,
-    gap: GAP,
+    paddingHorizontal: 20,
   },
   card: {
-    width: CARD_WIDTH,
     borderRadius: 20,
     padding: 20,
     minHeight: 130,
