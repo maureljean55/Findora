@@ -138,10 +138,10 @@ export default function DashboardHomeScreen({ onNavigate }: Props) {
 
         <View style={styles.headerActions}>
           <Pressable style={styles.iconButton} onPress={handleContactSupport}>
-            <MaterialCommunityIcons name="headset" size={20} color="#FFFFFF" />
+            <MaterialCommunityIcons name="headset" size={20} color={colors.textPrimary} />
           </Pressable>
           <Pressable style={styles.iconButton}>
-            <MaterialCommunityIcons name="bell-outline" size={20} color="#FFFFFF" />
+            <MaterialCommunityIcons name="bell-outline" size={20} color={colors.textPrimary} />
           </Pressable>
         </View>
       </View>
@@ -237,15 +237,13 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   headerCard: {
-    backgroundColor: splashColors.gradientTop,
+    backgroundColor: colors.background,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 56,
     paddingHorizontal: 20,
     paddingBottom: 16,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
   },
   avatar: {
     width: 44,
@@ -273,7 +271,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
