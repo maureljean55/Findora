@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -37,20 +38,27 @@ type Props = {
 
 export default function DashboardHomeScreen({ onNavigate }: Props) {
   const [user, setUser] = useState<User | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [declarations, setDeclarations] = useState<Declaration[]>([]);
   const [filter, setFilter] = useState<Filter>('all');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const [{ data: userData }, { data: declarationsData }] = await Promise.all([
-      supabase.auth.getUser(),
+    const { data: userData } = await supabase.auth.getUser();
+    const currentUser = userData.user ?? null;
+    setUser(currentUser);
+
+    const [{ data: profileData }, { data: declarationsData }] = await Promise.all([
+      currentUser
+        ? supabase.from('profiles').select('avatar_url').eq('id', currentUser.id).single()
+        : Promise.resolve({ data: null }),
       supabase
         .from('declarations')
         .select('id, type, category, title, location, reward, status, created_at')
         .order('created_at', { ascending: false }),
     ]);
-    setUser(userData.user ?? null);
+    setAvatarUrl((profileData as { avatar_url: string | null } | null)?.avatar_url ?? null);
     setDeclarations((declarationsData as Declaration[] | null) ?? []);
     setLoading(false);
     setRefreshing(false);
@@ -80,35 +88,18 @@ export default function DashboardHomeScreen({ onNavigate }: Props) {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
     >
       <View style={styles.headerCard}>
-        <View style={styles.headerTop}>
-          <Pressable style={styles.profileRow} onPress={() => onNavigate('profile')}>
+        <Pressable onPress={() => onNavigate('profile')}>
+          {avatarUrl ? (
+            <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+          ) : (
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>{initial || '?'}</Text>
             </View>
-            <View>
-              <Text style={styles.greeting}>{t('dashboard.greeting')}</Text>
-              <Text style={styles.name} numberOfLines={1}>
-                {displayName}
-              </Text>
-            </View>
-          </Pressable>
+          )}
+        </Pressable>
 
-          <View style={styles.bellButton}>
-            <MaterialCommunityIcons name="bell-outline" size={20} color="#FFFFFF" />
-          </View>
-        </View>
-
-        <View style={styles.actionsRow}>
-          <ActionButton
-            icon="map-marker-alert-outline"
-            label={t('dashboard.declareLost')}
-            onPress={() => onNavigate('declare')}
-          />
-          <ActionButton
-            icon="hand-heart-outline"
-            label={t('dashboard.declareFound')}
-            onPress={() => onNavigate('declare')}
-          />
+        <View style={styles.bellButton}>
+          <MaterialCommunityIcons name="bell-outline" size={20} color="#FFFFFF" />
         </View>
       </View>
 
@@ -146,25 +137,6 @@ export default function DashboardHomeScreen({ onNavigate }: Props) {
         )}
       </View>
     </ScrollView>
-  );
-}
-
-function ActionButton({
-  icon,
-  label,
-  onPress,
-}: {
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  label: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable style={styles.actionButton} onPress={onPress}>
-      <View style={styles.actionIconCircle}>
-        <MaterialCommunityIcons name={icon} size={24} color={splashColors.searchIcon} />
-      </View>
-      <Text style={styles.actionLabel}>{label}</Text>
-    </Pressable>
   );
 }
 
@@ -221,22 +193,14 @@ const styles = StyleSheet.create({
   },
   headerCard: {
     backgroundColor: splashColors.gradientTop,
-    paddingTop: 56,
-    paddingHorizontal: 20,
-    paddingBottom: 32,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-  },
-  headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  profileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flexShrink: 1,
+    paddingTop: 56,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
   },
   avatar: {
     width: 44,
@@ -246,20 +210,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  avatarImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
   avatarText: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '700',
-  },
-  greeting: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    maxWidth: 180,
   },
   bellButton: {
     width: 40,
@@ -268,33 +227,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  actionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 40,
-    marginTop: 32,
-  },
-  actionButton: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  actionIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-  },
-  actionLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
   section: {
     paddingHorizontal: 20,
