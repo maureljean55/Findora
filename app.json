@@ -24,7 +24,13 @@
     },
     "plugins": [
       "expo-web-browser",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Findora a besoin d'accéder à tes photos pour changer ta photo de profil."
+        }
+      ]
     ]
   }
 }

@@ -11,6 +11,8 @@ export const colors = {
   screenGradientTop: '#EAF2FF',
   screenGradientBottom: '#D6E7FC',
   inputFill: '#F2F5F9',
+  star: '#F5A623',
+  success: '#1D7A46',
 };
 
 export const statusColors = {
