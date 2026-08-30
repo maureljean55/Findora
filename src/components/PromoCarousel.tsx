@@ -12,7 +12,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_WIDTH - 40;
+const SIDE_PADDING = 20;
+const GAP = 12;
+const CARD_WIDTH = SCREEN_WIDTH - SIDE_PADDING * 2;
+const STEP = CARD_WIDTH + GAP;
 
 export type PromoCard = {
   key: string;
@@ -29,9 +32,9 @@ type Props = {
 export default function PromoCarousel({ cards }: Props) {
   const [index, setIndex] = useState(0);
 
-  const handleScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const nextIndex = Math.round(event.nativeEvent.contentOffset.x / CARD_WIDTH);
-    setIndex(nextIndex);
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const nextIndex = Math.round(event.nativeEvent.contentOffset.x / STEP);
+    setIndex((prev) => (prev === nextIndex ? prev : nextIndex));
   };
 
   if (cards.length === 0) return null;
@@ -42,9 +45,12 @@ export default function PromoCarousel({ cards }: Props) {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={handleScrollEnd}
+        onScroll={handleScroll}
+        onMomentumScrollEnd={handleScroll}
+        scrollEventThrottle={16}
         decelerationRate="fast"
-        snapToInterval={CARD_WIDTH}
+        snapToInterval={STEP}
+        contentContainerStyle={styles.scrollContent}
       >
         {cards.map((card) => (
           <LinearGradient key={card.key} colors={card.colors} style={styles.card}>
@@ -72,9 +78,12 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 20,
   },
+  scrollContent: {
+    paddingHorizontal: SIDE_PADDING,
+    gap: GAP,
+  },
   card: {
     width: CARD_WIDTH,
-    marginLeft: 20,
     borderRadius: 20,
     padding: 20,
     minHeight: 130,

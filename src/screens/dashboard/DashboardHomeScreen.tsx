@@ -89,7 +89,7 @@ export default function DashboardHomeScreen({ onNavigate }: Props) {
       icon: 'shield-check-outline',
       title: t('dashboard.promo.antiFraudTitle'),
       body: t('dashboard.promo.antiFraudBody'),
-      colors: ['#1D3A2A', '#2F6F4E'],
+      colors: [splashColors.gradientTop, splashColors.gradientBottom],
     },
     {
       key: 'stats',
@@ -98,7 +98,7 @@ export default function DashboardHomeScreen({ onNavigate }: Props) {
       body: platformStats
         ? t('dashboard.promo.statsBody', { total: platformStats.total, resolved: platformStats.resolved })
         : t('dashboard.promo.statsLoading'),
-      colors: ['#3A2A1D', '#8A5A2F'],
+      colors: [splashColors.gradientTop, splashColors.gradientBottom],
     },
   ];
 
@@ -126,7 +126,7 @@ export default function DashboardHomeScreen({ onNavigate }: Props) {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
     >
       <View style={styles.headerCard}>
-        <Pressable onPress={() => onNavigate('profile')}>
+        <Pressable style={styles.profileRow} onPress={() => onNavigate('profile')}>
           {avatarUrl ? (
             <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
           ) : (
@@ -134,6 +134,12 @@ export default function DashboardHomeScreen({ onNavigate }: Props) {
               <Text style={styles.avatarText}>{initial || '?'}</Text>
             </View>
           )}
+          <View style={styles.flexShrink}>
+            <Text style={styles.greeting}>{t('dashboard.greeting')}</Text>
+            <Text style={styles.name} numberOfLines={1}>
+              {displayName}
+            </Text>
+          </View>
         </Pressable>
 
         <View style={styles.headerActions}>
@@ -241,9 +247,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 56,
+    paddingTop: 20,
     paddingHorizontal: 20,
     paddingBottom: 16,
+  },
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flexShrink: 1,
+  },
+  flexShrink: {
+    flexShrink: 1,
   },
   avatar: {
     width: 44,
@@ -262,6 +277,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '700',
+  },
+  greeting: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  name: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    maxWidth: 180,
   },
   headerActions: {
     flexDirection: 'row',
