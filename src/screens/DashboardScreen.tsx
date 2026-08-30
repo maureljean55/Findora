@@ -5,6 +5,7 @@ import BottomTabBar, { TabKey } from '../components/BottomTabBar';
 import DashboardHomeScreen from './dashboard/DashboardHomeScreen';
 import ComingSoonScreen from './dashboard/ComingSoonScreen';
 import ProfileScreen from './dashboard/ProfileScreen';
+import SettingsScreen from './SettingsScreen';
 
 type Props = {
   onSignedOut: () => void;
@@ -12,18 +13,33 @@ type Props = {
 
 export default function DashboardScreen({ onSignedOut }: Props) {
   const [tab, setTab] = useState<TabKey>('home');
+  const [showSettings, setShowSettings] = useState(false);
+
+  const handleChangeTab = (next: TabKey) => {
+    setShowSettings(false);
+    setTab(next);
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        {tab === 'home' && <DashboardHomeScreen onNavigate={setTab} />}
+        {tab === 'home' && <DashboardHomeScreen onNavigate={handleChangeTab} />}
         {tab === 'search' && <ComingSoonScreen icon="magnify" />}
         {tab === 'declare' && <ComingSoonScreen icon="plus-circle-outline" />}
         {tab === 'messages' && <ComingSoonScreen icon="message-text-outline" />}
-        {tab === 'profile' && <ProfileScreen onSignedOut={onSignedOut} />}
+        {tab === 'profile' &&
+          (showSettings ? (
+            <SettingsScreen onBack={() => setShowSettings(false)} />
+          ) : (
+            <ProfileScreen
+              onNavigate={handleChangeTab}
+              onOpenSettings={() => setShowSettings(true)}
+              onSignedOut={onSignedOut}
+            />
+          ))}
       </View>
 
-      <BottomTabBar active={tab} onChange={setTab} />
+      <BottomTabBar active={tab} onChange={handleChangeTab} />
     </View>
   );
 }

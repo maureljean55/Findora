@@ -26,9 +26,135 @@ export default {
   },
   comingSoon: {
     title: 'Bientôt disponible',
-    body: "Cette section arrive dans une prochaine mise à jour de Findora.",
+    body: 'Cette section arrive dans une prochaine mise à jour de Findora.',
   },
   profile: {
+    memberSince: 'Membre depuis {{date}}',
+    verified: 'Vérifié',
+    editPhoto: 'Modifier la photo',
+    editProfile: 'Modifier mon profil',
+    settings: 'Paramètres',
     signOut: 'Se déconnecter',
+    noLocation: 'Localisation non renseignée',
+
+    badge: {
+      title: 'Niveau de confiance',
+      newMember: 'Nouveau membre',
+      goodCitizen: 'Bon citoyen',
+      engagedCitizen: 'Citoyen engagé',
+      localHero: 'Héros local',
+      legend: 'Légende Findora',
+      progress: '{{count}} objet(s) rendu(s) — encore {{remaining}} avant "{{next}}"',
+      maxLevel: 'Niveau maximum atteint !',
+    },
+
+    stats: {
+      title: 'Mes statistiques',
+      lost: 'Objets perdus',
+      found: 'Objets trouvés',
+      returned: 'Objets rendus',
+    },
+
+    trust: {
+      title: 'Confiance & réputation',
+      identityVerified: 'Identité vérifiée',
+      identityNotVerified: 'Identité non vérifiée',
+      verifyAction: 'Vérifier mon identité',
+      averageRating: 'Note moyenne',
+      noReviews: 'Pas encore d\'avis',
+      reviewsCount: '{{count}} avis',
+      responseRate: 'Taux de réponse',
+      responseRateUnavailable: 'Pas encore assez de messages pour calculer ce taux.',
+    },
+
+    declarations: {
+      title: 'Mes déclarations',
+      myLost: 'Mes objets perdus',
+      myFound: 'Mes objets trouvés',
+      history: 'Historique archivé / résolu',
+      favorites: 'Objets suivis',
+      favoritesEmpty: 'Tu ne suis encore aucune annonce.',
+    },
+
+    finance: {
+      title: 'Historique financier',
+      given: 'Récompenses données',
+      received: 'Récompenses reçues',
+      empty: 'Aucune récompense pour l\'instant.',
+    },
+
+    social: {
+      title: 'Social & engagement',
+      referralTitle: 'Parraine tes proches',
+      referralBody: 'Partage ton code et aide Findora à grandir.',
+      referralCode: 'Mon code de parrainage',
+      copyCode: 'Copier le code',
+      codeCopied: 'Code copié !',
+      shareProfile: 'Partager mon profil',
+      shareApp: "Partager l'application",
+    },
+
+    privacy: {
+      title: 'Confidentialité & données',
+      exportData: 'Exporter mes données',
+      exportBody: 'Télécharge une copie de tes données Findora (profil, déclarations, avis).',
+      visibility: 'Profil public',
+      visibilityBody: 'Visible dans les résultats de recherche des autres utilisateurs.',
+      loginHistory: 'Appareils connectés',
+    },
+
+    support: {
+      title: 'Support & confiance',
+      help: 'Aide / FAQ',
+      contact: 'Contacter le support',
+      report: 'Signaler un problème',
+      terms: "Conditions d'utilisation",
+      privacyPolicy: 'Politique de confidentialité',
+    },
+
+    other: {
+      title: 'Autres',
+      notifications: 'Centre de notifications',
+      notificationsEmpty: 'Aucune notification pour le moment.',
+      version: 'Version {{version}}',
+      rateApp: "Noter l'application",
+    },
+  },
+  settings: {
+    title: 'Paramètres',
+    account: {
+      title: 'Mon compte',
+      fullName: 'Nom complet',
+      email: 'Email',
+      phone: 'Téléphone',
+      changePassword: 'Changer le mot de passe',
+    },
+    preferences: {
+      title: 'Préférences',
+      language: "Langue de l'application",
+      distanceUnit: 'Unité de distance',
+      km: 'Kilomètres',
+      miles: 'Miles',
+    },
+    notifications: {
+      title: 'Notifications',
+      matches: 'Nouveaux matches',
+      messages: 'Nouveaux messages',
+      marketing: 'Actualités Findora',
+    },
+    linkedAccounts: {
+      title: 'Comptes liés',
+      google: 'Google',
+      apple: 'Apple',
+      connected: 'Connecté',
+      notConnected: 'Non connecté',
+    },
+    dangerZone: {
+      title: 'Zone de danger',
+      deleteAccount: 'Supprimer mon compte',
+      deleteConfirm: 'Cette action est définitive et supprimera toutes tes données. Confirmer ?',
+    },
+    save: 'Enregistrer',
+    saved: 'Modifications enregistrées.',
   },
 };
