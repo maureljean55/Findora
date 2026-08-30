@@ -5,6 +5,7 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   View,
@@ -15,6 +16,7 @@ import { colors, splashColors, statusColors } from '../../theme/colors';
 import { supabase } from '../../lib/supabase';
 import { t } from '../../i18n';
 import type { TabKey } from '../../components/BottomTabBar';
+import PromoCarousel, { PromoCard } from '../../components/PromoCarousel';
 
 type DeclarationType = 'lost' | 'found';
 type DeclarationStatus = 'pending' | 'matched' | 'resolved' | 'archived';
@@ -43,13 +45,14 @@ export default function DashboardHomeScreen({ onNavigate }: Props) {
   const [filter, setFilter] = useState<Filter>('all');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [platformStats, setPlatformStats] = useState<{ total: number; resolved: number } | null>(null);
 
   const load = useCallback(async () => {
     const { data: userData } = await supabase.auth.getUser();
     const currentUser = userData.user ?? null;
     setUser(currentUser);
 
-    const [{ data: profileData }, { data: declarationsData }] = await Promise.all([
+    const [{ data: profileData }, { data: declarationsData }, { data: statsData }] = await Promise.all([
       currentUser
         ? supabase.from('profiles').select('avatar_url').eq('id', currentUser.id).single()
         : Promise.resolve({ data: null }),
@@ -57,12 +60,47 @@ export default function DashboardHomeScreen({ onNavigate }: Props) {
         .from('declarations')
         .select('id, type, category, title, location, reward, status, created_at')
         .order('created_at', { ascending: false }),
+      supabase.rpc('platform_stats'),
     ]);
     setAvatarUrl((profileData as { avatar_url: string | null } | null)?.avatar_url ?? null);
     setDeclarations((declarationsData as Declaration[] | null) ?? []);
+    const statsRow = (statsData as { total_declarations: number; total_resolved: number }[] | null)?.[0];
+    if (statsRow) {
+      setPlatformStats({ total: statsRow.total_declarations, resolved: statsRow.total_resolved });
+    }
     setLoading(false);
     setRefreshing(false);
   }, []);
+
+  const handleContactSupport = () => {
+    Share.share({ message: 'support@findora.app' });
+  };
+
+  const promoCards: PromoCard[] = [
+    {
+      key: 'how-it-works',
+      icon: 'radar',
+      title: t('dashboard.promo.howItWorksTitle'),
+      body: t('dashboard.promo.howItWorksBody'),
+      colors: [splashColors.gradientTop, splashColors.gradientBottom],
+    },
+    {
+      key: 'anti-fraud',
+      icon: 'shield-check-outline',
+      title: t('dashboard.promo.antiFraudTitle'),
+      body: t('dashboard.promo.antiFraudBody'),
+      colors: ['#1D3A2A', '#2F6F4E'],
+    },
+    {
+      key: 'stats',
+      icon: 'chart-line',
+      title: t('dashboard.promo.statsTitle'),
+      body: platformStats
+        ? t('dashboard.promo.statsBody', { total: platformStats.total, resolved: platformStats.resolved })
+        : t('dashboard.promo.statsLoading'),
+      colors: ['#3A2A1D', '#8A5A2F'],
+    },
+  ];
 
   useEffect(() => {
     load();
@@ -98,10 +136,17 @@ export default function DashboardHomeScreen({ onNavigate }: Props) {
           )}
         </Pressable>
 
-        <View style={styles.bellButton}>
-          <MaterialCommunityIcons name="bell-outline" size={20} color="#FFFFFF" />
+        <View style={styles.headerActions}>
+          <Pressable style={styles.iconButton} onPress={handleContactSupport}>
+            <MaterialCommunityIcons name="headset" size={20} color="#FFFFFF" />
+          </Pressable>
+          <Pressable style={styles.iconButton}>
+            <MaterialCommunityIcons name="bell-outline" size={20} color="#FFFFFF" />
+          </Pressable>
         </View>
       </View>
+
+      <PromoCarousel cards={promoCards} />
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t('dashboard.myDeclarations')}</Text>
@@ -220,7 +265,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
   },
-  bellButton: {
+  headerActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  iconButton: {
     width: 40,
     height: 40,
     borderRadius: 20,

@@ -16,6 +16,15 @@ export default {
       resolved: 'Résolu',
       archived: 'Archivé',
     },
+    promo: {
+      howItWorksTitle: 'Comment ça marche',
+      howItWorksBody: 'Déclare un objet perdu ou trouvé, on te propose les bonnes correspondances automatiquement.',
+      antiFraudTitle: 'Vérification anti-fraude',
+      antiFraudBody: "Avant tout contact, on vérifie un détail caché que seul le vrai propriétaire connaît.",
+      statsTitle: 'Findora en chiffres',
+      statsBody: '{{total}} objets signalés, dont {{resolved}} déjà retrouvés.',
+      statsLoading: 'Chargement des statistiques...',
+    },
   },
   nav: {
     home: 'Accueil',
