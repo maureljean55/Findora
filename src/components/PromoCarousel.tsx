@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Dimensions,
   NativeScrollEvent,
@@ -13,7 +13,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40;
-const AUTO_ADVANCE_MS = 3000;
 
 export type PromoCard = {
   key: string;
@@ -28,27 +27,9 @@ type Props = {
 };
 
 export default function PromoCarousel({ cards }: Props) {
-  const scrollRef = useRef<ScrollView>(null);
   const [index, setIndex] = useState(0);
-  const isUserScrolling = useRef(false);
-
-  useEffect(() => {
-    if (cards.length < 2) return undefined;
-
-    const timer = setInterval(() => {
-      if (isUserScrolling.current) return;
-      setIndex((prev) => {
-        const next = (prev + 1) % cards.length;
-        scrollRef.current?.scrollTo({ x: next * CARD_WIDTH, animated: true });
-        return next;
-      });
-    }, AUTO_ADVANCE_MS);
-
-    return () => clearInterval(timer);
-  }, [cards.length]);
 
   const handleScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    isUserScrolling.current = false;
     const nextIndex = Math.round(event.nativeEvent.contentOffset.x / CARD_WIDTH);
     setIndex(nextIndex);
   };
@@ -58,13 +39,9 @@ export default function PromoCarousel({ cards }: Props) {
   return (
     <View style={styles.container}>
       <ScrollView
-        ref={scrollRef}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onScrollBeginDrag={() => {
-          isUserScrolling.current = true;
-        }}
         onMomentumScrollEnd={handleScrollEnd}
         decelerationRate="fast"
         snapToInterval={CARD_WIDTH}
