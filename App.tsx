@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SplashScreen from './src/screens/SplashScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import AuthScreen from './src/screens/AuthScreen';
@@ -32,7 +33,7 @@ export default function App() {
   const navigateToHome = useCallback(() => setScreen('home'), []);
 
   return (
-    <>
+    <SafeAreaProvider>
       {screen === 'splash' && <SplashScreen onFinished={handleSplashFinished} />}
       {screen === 'onboarding' && (
         <OnboardingScreen onSkip={navigateToAuth} onFinish={navigateToAuth} />
@@ -40,6 +41,6 @@ export default function App() {
       {screen === 'auth' && <AuthScreen onAuthenticated={navigateToHome} />}
       {screen === 'home' && <DashboardScreen onSignedOut={navigateToAuth} />}
       <StatusBar style="auto" />
-    </>
+    </SafeAreaProvider>
   );
 }

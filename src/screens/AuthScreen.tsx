@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, splashColors } from '../theme/colors';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
@@ -61,6 +62,7 @@ type Props = {
 };
 
 export default function AuthScreen({ onAuthenticated }: Props) {
+  const insets = useSafeAreaInsets();
   const [mode, setMode] = useState<Mode>('login');
   const [staySignedIn, setStaySignedIn] = useState(false);
 
@@ -417,7 +419,12 @@ export default function AuthScreen({ onAuthenticated }: Props) {
       >
         {mode === 'signup' ? (
           <>
-            <View style={styles.signupHeaderWrap}>
+            <View
+              style={[
+                styles.signupHeaderWrap,
+                { paddingTop: Math.max(insets.top + 8, Platform.select({ web: 32, default: 108 })!) },
+              ]}
+            >
               <Text style={styles.headerTitle}>Créer un compte</Text>
               <Text style={styles.headerSubtitle}>Rejoignez Findora en quelques secondes</Text>
             </View>
@@ -443,6 +450,7 @@ export default function AuthScreen({ onAuthenticated }: Props) {
           <ScrollView
             contentContainerStyle={[
               styles.scrollContent,
+              !isLoginFixed && { paddingTop: Math.max(insets.top + 8, 130) },
               isLoginFixed && {
                 flexGrow: 0,
                 height: '100%',

@@ -7,8 +7,11 @@ export default {
     filterAll: 'Tous',
     filterLost: 'Perdus',
     filterFound: 'Trouvés',
+    searchPlaceholder: 'Rechercher une déclaration...',
     emptyTitle: 'Aucune déclaration',
     emptyBody: 'Déclare un objet perdu ou trouvé pour le voir apparaître ici.',
+    emptySearchTitle: 'Aucun résultat',
+    emptySearchBody: 'Essaie un autre mot-clé.',
     reward: 'Récompense',
     status: {
       pending: 'En attente',
@@ -28,10 +31,15 @@ export default {
   },
   nav: {
     home: 'Accueil',
-    search: 'Rechercher',
+    history: 'Historique',
     declare: 'Déclarer',
     messages: 'Messages',
     profile: 'Profil',
+  },
+  history: {
+    title: 'Historique',
+    emptyTitle: 'Aucun historique',
+    emptyBody: 'Tes déclarations résolues ou archivées apparaîtront ici.',
   },
   comingSoon: {
     title: 'Bientôt disponible',

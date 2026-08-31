@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { User } from '@supabase/supabase-js';
 import { colors } from '../theme/colors';
 import SectionCard from '../components/SectionCard';
@@ -24,6 +25,7 @@ type Props = {
 };
 
 export default function SettingsScreen({ onBack }: Props) {
+  const insets = useSafeAreaInsets();
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [newPassword, setNewPassword] = useState('');
@@ -113,7 +115,7 @@ export default function SettingsScreen({ onBack }: Props) {
 
   return (
     <View style={styles.flex}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top + 8, 56) }]}>
         <Pressable onPress={onBack} hitSlop={8}>
           <MaterialCommunityIcons name="arrow-left" size={22} color={colors.textPrimary} />
         </Pressable>
@@ -259,7 +261,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 120,
     gap: 16,
   },
   passwordRow: {

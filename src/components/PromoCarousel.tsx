@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Animated, PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { splashColors } from '../theme/colors';
 
 export type PromoCard = {
   key: string;
@@ -65,11 +66,22 @@ export default function PromoCarousel({ cards }: Props) {
 
       {cards.length > 1 && (
         <View style={styles.dots}>
-          {cards.map((c, dotIndex) => (
-            <Pressable key={c.key} hitSlop={8} onPress={() => goTo(dotIndex)}>
-              <View style={[styles.dot, dotIndex === index && styles.dotActive]} />
-            </Pressable>
-          ))}
+          {cards.map((c, dotIndex) =>
+            dotIndex === index ? (
+              <Pressable key={c.key} hitSlop={8} onPress={() => goTo(dotIndex)}>
+                <LinearGradient
+                  colors={[splashColors.gradientTop, splashColors.gradientBottom]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={[styles.dot, styles.dotActive]}
+                />
+              </Pressable>
+            ) : (
+              <Pressable key={c.key} hitSlop={8} onPress={() => goTo(dotIndex)}>
+                <View style={styles.dot} />
+              </Pressable>
+            )
+          )}
         </View>
       )}
     </View>
@@ -121,6 +133,5 @@ const styles = StyleSheet.create({
   },
   dotActive: {
     width: 16,
-    backgroundColor: '#2F6FED',
   },
 });

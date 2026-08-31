@@ -8,41 +8,36 @@ import {
   Share,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import MaskedView from '@react-native-masked-view/masked-view';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { User } from '@supabase/supabase-js';
-import { colors, splashColors, statusColors } from '../../theme/colors';
+import { colors, splashColors } from '../../theme/colors';
 import { supabase } from '../../lib/supabase';
 import { t } from '../../i18n';
 import type { TabKey } from '../../components/BottomTabBar';
 import PromoCarousel, { PromoCard } from '../../components/PromoCarousel';
-
-type DeclarationType = 'lost' | 'found';
-type DeclarationStatus = 'pending' | 'matched' | 'resolved' | 'archived';
-
-type Declaration = {
-  id: string;
-  type: DeclarationType;
-  category: string;
-  title: string;
-  location: string | null;
-  reward: string | null;
-  status: DeclarationStatus;
-  created_at: string;
-};
-
-type Filter = 'all' | DeclarationType;
+import DeclarationRow from '../../components/DeclarationRow';
+import type { Declaration, DeclarationType } from '../../types/declaration';
 
 type Props = {
   onNavigate: (tab: TabKey) => void;
 };
 
+type TypeFilter = 'all' | DeclarationType;
+
 export default function DashboardHomeScreen({ onNavigate }: Props) {
+  const insets = useSafeAreaInsets();
   const [user, setUser] = useState<User | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [declarations, setDeclarations] = useState<Declaration[]>([]);
-  const [filter, setFilter] = useState<Filter>('all');
+  const [query, setQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [platformStats, setPlatformStats] = useState<{ total: number; resolved: number } | null>(null);
@@ -115,9 +110,22 @@ export default function DashboardHomeScreen({ onNavigate }: Props) {
     (user?.user_metadata?.full_name as string | undefined)?.trim() || user?.email || '';
   const initial = displayName.charAt(0).toUpperCase();
 
-  const filteredDeclarations = declarations.filter(
-    (item) => filter === 'all' || item.type === filter
-  );
+  const trimmedQuery = query.trim().toLowerCase();
+  const filteredDeclarations = declarations
+    .filter((item) => typeFilter === 'all' || item.type === typeFilter)
+    .filter(
+      (item) =>
+        !trimmedQuery ||
+        [item.title, item.category, item.location].some((field) =>
+          field?.toLowerCase().includes(trimmedQuery)
+        )
+    );
+
+  const FILTER_OPTIONS: { key: TypeFilter; label: string }[] = [
+    { key: 'all', label: t('dashboard.filterAll') },
+    { key: 'lost', label: t('dashboard.filterLost') },
+    { key: 'found', label: t('dashboard.filterFound') },
+  ];
 
   return (
     <ScrollView
@@ -125,14 +133,17 @@ export default function DashboardHomeScreen({ onNavigate }: Props) {
       contentContainerStyle={styles.scrollContent}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
     >
-      <View style={styles.headerCard}>
+      <View style={[styles.headerCard, { paddingTop: insets.top + 12 }]}>
         <Pressable style={styles.profileRow} onPress={() => onNavigate('profile')}>
           {avatarUrl ? (
             <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
           ) : (
-            <View style={styles.avatar}>
+            <LinearGradient
+              colors={[splashColors.gradientTop, splashColors.gradientBottom]}
+              style={styles.avatar}
+            >
               <Text style={styles.avatarText}>{initial || '?'}</Text>
-            </View>
+            </LinearGradient>
           )}
           <View style={styles.flexShrink}>
             <Text style={styles.greeting}>{t('dashboard.greeting')}</Text>
@@ -154,30 +165,73 @@ export default function DashboardHomeScreen({ onNavigate }: Props) {
 
       <PromoCarousel cards={promoCards} />
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t('dashboard.myDeclarations')}</Text>
-
-        <View style={styles.filterRow}>
-          <FilterPill label={t('dashboard.filterAll')} active={filter === 'all'} onPress={() => setFilter('all')} />
-          <FilterPill
-            label={t('dashboard.filterLost')}
-            active={filter === 'lost'}
-            onPress={() => setFilter('lost')}
-          />
-          <FilterPill
-            label={t('dashboard.filterFound')}
-            active={filter === 'found'}
-            onPress={() => setFilter('found')}
+      <View style={styles.searchRow}>
+        <View style={styles.searchBar}>
+          <MaterialCommunityIcons name="magnify" size={18} color={colors.placeholder} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder={t('dashboard.searchPlaceholder')}
+            placeholderTextColor={colors.placeholder}
+            value={query}
+            onChangeText={setQuery}
           />
         </View>
+        <View>
+          <Pressable style={styles.filterButton} onPress={() => setFilterMenuOpen((prev) => !prev)}>
+            <MaskedView
+              style={styles.filterIconSize}
+              maskElement={<MaterialCommunityIcons name="tune-variant" size={20} color="#000000" />}
+            >
+              <LinearGradient
+                colors={[splashColors.gradientTop, splashColors.gradientBottom]}
+                style={styles.filterIconSize}
+              />
+            </MaskedView>
+          </Pressable>
+
+          {filterMenuOpen && (
+            <View style={styles.filterMenu}>
+              {FILTER_OPTIONS.map((option) => (
+                <Pressable
+                  key={option.key}
+                  style={styles.filterMenuItem}
+                  onPress={() => {
+                    setTypeFilter(option.key);
+                    setFilterMenuOpen(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.filterMenuItemText,
+                      typeFilter === option.key && styles.filterMenuItemTextActive,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                  {typeFilter === option.key && (
+                    <MaterialCommunityIcons name="check" size={16} color={colors.accent} />
+                  )}
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('dashboard.myDeclarations')}</Text>
 
         {loading ? (
           <ActivityIndicator style={styles.loading} color={colors.accent} />
         ) : filteredDeclarations.length === 0 ? (
           <View style={styles.emptyState}>
             <MaterialCommunityIcons name="clipboard-text-outline" size={32} color={colors.placeholder} />
-            <Text style={styles.emptyTitle}>{t('dashboard.emptyTitle')}</Text>
-            <Text style={styles.emptyBody}>{t('dashboard.emptyBody')}</Text>
+            <Text style={styles.emptyTitle}>
+              {trimmedQuery ? t('dashboard.emptySearchTitle') : t('dashboard.emptyTitle')}
+            </Text>
+            <Text style={styles.emptyBody}>
+              {trimmedQuery ? t('dashboard.emptySearchBody') : t('dashboard.emptyBody')}
+            </Text>
           </View>
         ) : (
           <View style={styles.list}>
@@ -191,63 +245,19 @@ export default function DashboardHomeScreen({ onNavigate }: Props) {
   );
 }
 
-function FilterPill({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
-  return (
-    <Pressable style={[styles.filterPill, active && styles.filterPillActive]} onPress={onPress}>
-      <Text style={[styles.filterPillText, active && styles.filterPillTextActive]}>{label}</Text>
-    </Pressable>
-  );
-}
-
-function DeclarationRow({ item }: { item: Declaration }) {
-  const tone = statusColors[item.status];
-  return (
-    <View style={styles.row}>
-      <View style={styles.rowIcon}>
-        <MaterialCommunityIcons
-          name={item.type === 'lost' ? 'map-marker-alert-outline' : 'hand-heart-outline'}
-          size={20}
-          color={splashColors.searchIcon}
-        />
-      </View>
-
-      <View style={styles.rowBody}>
-        <Text style={styles.rowTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <Text style={styles.rowSubtitle} numberOfLines={1}>
-          {[item.category, item.location].filter(Boolean).join(' · ')}
-        </Text>
-        {!!item.reward && (
-          <Text style={styles.rowReward}>
-            {t('dashboard.reward')} : {item.reward}
-          </Text>
-        )}
-      </View>
-
-      <View style={[styles.statusPill, { backgroundColor: tone.background }]}>
-        <Text style={[styles.statusPillText, { color: tone.text }]}>
-          {t(`dashboard.status.${item.status}`)}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
     backgroundColor: colors.background,
   },
   scrollContent: {
-    paddingBottom: 32,
+    paddingBottom: 110,
   },
   headerCard: {
     backgroundColor: colors.background,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 20,
     paddingHorizontal: 20,
     paddingBottom: 16,
   },
@@ -264,7 +274,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: splashColors.gradientBottom,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -300,6 +309,74 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 20,
+    marginTop: 20,
+    zIndex: 20,
+    elevation: 20,
+  },
+  searchBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 46,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.textPrimary,
+  },
+  filterButton: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterIconSize: {
+    width: 20,
+    height: 20,
+  },
+  filterMenu: {
+    position: 'absolute',
+    top: 54,
+    right: 0,
+    backgroundColor: colors.background,
+    borderRadius: 14,
+    paddingVertical: 6,
+    minWidth: 140,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    zIndex: 10,
+    elevation: 10,
+  },
+  filterMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  filterMenuItemText: {
+    fontSize: 13,
+    color: colors.textPrimary,
+  },
+  filterMenuItemTextActive: {
+    color: colors.accent,
+    fontWeight: '700',
+  },
   section: {
     paddingHorizontal: 20,
     marginTop: 24,
@@ -308,28 +385,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: colors.textPrimary,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 12,
-  },
-  filterPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: colors.surface,
-  },
-  filterPillActive: {
-    backgroundColor: colors.accent,
-  },
-  filterPillText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  filterPillTextActive: {
-    color: colors.accentText,
   },
   loading: {
     marginTop: 32,
@@ -353,49 +408,5 @@ const styles = StyleSheet.create({
   list: {
     marginTop: 16,
     gap: 12,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 12,
-  },
-  rowIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rowBody: {
-    flex: 1,
-    gap: 2,
-  },
-  rowTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  rowSubtitle: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  rowReward: {
-    fontSize: 12,
-    color: colors.accent,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  statusPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 999,
-  },
-  statusPillText: {
-    fontSize: 11,
-    fontWeight: '700',
   },
 });
