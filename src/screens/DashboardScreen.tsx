@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { colors } from '../theme/colors';
 import BottomTabBar, { TabKey } from '../components/BottomTabBar';
 import DashboardHomeScreen from './dashboard/DashboardHomeScreen';
+import HistoryScreen from './dashboard/HistoryScreen';
 import ComingSoonScreen from './dashboard/ComingSoonScreen';
 import ProfileScreen from './dashboard/ProfileScreen';
 import SettingsScreen from './SettingsScreen';
@@ -24,7 +25,7 @@ export default function DashboardScreen({ onSignedOut }: Props) {
     <View style={styles.container}>
       <View style={styles.content}>
         {tab === 'home' && <DashboardHomeScreen onNavigate={handleChangeTab} />}
-        {tab === 'search' && <ComingSoonScreen icon="magnify" />}
+        {tab === 'history' && <HistoryScreen />}
         {tab === 'declare' && <ComingSoonScreen icon="plus-circle-outline" />}
         {tab === 'messages' && <ComingSoonScreen icon="message-text-outline" />}
         {tab === 'profile' &&

@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { splashColors } from '../theme/colors';
 
 const findoraLogo = require('../../assets/findora-logo.png');
@@ -64,6 +65,7 @@ type Props = {
 };
 
 export default function OnboardingScreen({ onSkip, onFinish }: Props) {
+  const insets = useSafeAreaInsets();
   const [index, setIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
   const isLast = index === SLIDES.length - 1;
@@ -91,7 +93,7 @@ export default function OnboardingScreen({ onSkip, onFinish }: Props) {
       colors={[splashColors.gradientTop, splashColors.gradientBottom]}
       style={styles.flex}
     >
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { paddingTop: Math.max(insets.top + 8, Platform.select({ web: 20, default: 60 })!) }]}>
         <View style={styles.logoRow}>
           <Image source={findoraLogo} style={styles.logoBadge} resizeMode="contain" />
           <Text style={styles.logoText}>Findora</Text>

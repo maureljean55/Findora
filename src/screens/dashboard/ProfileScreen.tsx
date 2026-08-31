@@ -12,8 +12,10 @@ import {
   View,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import * as Clipboard from 'expo-clipboard';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { User } from '@supabase/supabase-js';
 import { colors, splashColors } from '../../theme/colors';
 import SectionCard from '../../components/SectionCard';
@@ -63,6 +65,7 @@ type Props = {
 };
 
 export default function ProfileScreen({ onNavigate, onOpenSettings, onSignedOut }: Props) {
+  const insets = useSafeAreaInsets();
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<Stats>(EMPTY_STATS);
@@ -221,7 +224,7 @@ export default function ProfileScreen({ onNavigate, onOpenSettings, onSignedOut 
   return (
     <ScrollView
       style={styles.flex}
-      contentContainerStyle={styles.scrollContent}
+      contentContainerStyle={[styles.scrollContent, { paddingTop: Math.max(insets.top + 8, 24) }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
     >
       {/* 1. Identité */}
@@ -230,9 +233,12 @@ export default function ProfileScreen({ onNavigate, onOpenSettings, onSignedOut 
           {profile?.avatar_url ? (
             <Image source={{ uri: profile.avatar_url }} style={styles.avatarImage} />
           ) : (
-            <View style={styles.avatarFallback}>
+            <LinearGradient
+              colors={[splashColors.gradientTop, splashColors.gradientBottom]}
+              style={styles.avatarFallback}
+            >
               <Text style={styles.avatarFallbackText}>{initial || '?'}</Text>
-            </View>
+            </LinearGradient>
           )}
           <View style={styles.avatarEditBadge}>
             {uploadingPhoto ? (
@@ -335,7 +341,7 @@ export default function ProfileScreen({ onNavigate, onOpenSettings, onSignedOut 
       <SectionCard title={t('profile.declarations.title')}>
         <SettingsRow icon="map-marker-alert-outline" label={t('profile.declarations.myLost')} onPress={() => onNavigate('home')} />
         <SettingsRow icon="hand-heart-outline" label={t('profile.declarations.myFound')} onPress={() => onNavigate('home')} />
-        <SettingsRow icon="archive-outline" label={t('profile.declarations.history')} onPress={() => onNavigate('home')} />
+        <SettingsRow icon="archive-outline" label={t('profile.declarations.history')} onPress={() => onNavigate('history')} />
         <SettingsRow
           icon="heart-outline"
           label={t('profile.declarations.favorites')}
@@ -438,7 +444,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 24,
-    paddingBottom: 40,
+    paddingBottom: 120,
     gap: 16,
   },
   header: {
@@ -460,7 +466,6 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: splashColors.gradientTop,
     alignItems: 'center',
     justifyContent: 'center',
   },
